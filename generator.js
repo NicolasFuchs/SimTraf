@@ -11,40 +11,74 @@ let loca = require('./loca.js');
 let zoom = require('./zoom.js');
 let drag = require('./drag.js');
 
+let fiwStore = require('./fiwareStorageTester');
+
 let crt_hashkey = '';       // Current hashkey
 let crt_viewport = [];      // Current viewport
 let last_hashkey = '';      // hashkey of last map view
 let last_viewport = [];     // viewport of last map view
+let APIkey = 'AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU';
 
+//const map_diff_lat = 0.02211494699;
+//const map_diff_lng = 0.03218650819;
+//const granularity = 5000;           // On the default zoom level, 100 x 100 points are captured for ~ delta_lat = 0.02 and delta_lng = 0.02
+const granularity = 500;
+
+module.exports.granularity = granularity;
 module.exports.last_hashkey = last_hashkey;
 module.exports.last_viewport = last_viewport;
 
-const map_diff_lat = 0.02211494699;
-const map_diff_lng = 0.03218650819;
-
 function mulReqCaller(points, add_hashvalue, result, callback) {
-    let request = require('request');
-    let crtpoints = '';
-    if (points.length > 0) {
-        crtpoints += points.pop() + ',';
-    }
-    // One nearest roads request can't contain more than 100 points
-    for (let i = 1; points.length > 0 && i < 199; i++) {
-        crtpoints += points.pop();
-        if (i % 2 === 0 && points.length > 0) crtpoints += ',';
-        else if (i < 198) crtpoints += '|';
-    }
-    if (points.length > 0) {
-        crtpoints += points.pop();
 
-        let headers = {'Content-Type':'application/json'};
+    if (points.length === 0) {
+        if (add_hashvalue !== '') {
+            result = result + ',' + add_hashvalue;
+        }
+        storage.setItemSync(crt_hashkey, result);
+        result = ('{"allSnappedPoints":[').concat(result);
+        result = result.concat(']}');
+        last_hashkey = crt_hashkey;
+        last_viewport = crt_viewport;
+
+        if (add_hashvalue !== "") {
+            let fs = require('fs');
+            fs.writeFile('../jsonView', result, function (err) {
+                if (err)
+                    return console.log(err);
+                console.log('Wrote result in file jsonView.txt, just check it');
+            });
+        }
+
+        callback(result);
+    } else {
+        let request = require('request');
+        let crtpoints = '';
+        crtpoints += points.pop() + ',';
+        let nbPoints = 0;
+        for (let i = 1; points.length > 0 && i < 199; i++) {            // One nearest roads request can't contain more than 100 points (200 lat/lng)
+            crtpoints += points.pop();
+            nbPoints++;
+            if (points.length !== 0) {
+                if (i % 2 === 0) crtpoints += ',';
+                else if (i < 198) crtpoints += '|';
+            }
+        }
+        if (points.length > 0) {
+            crtpoints += points.pop();
+        }
+        if (add_hashvalue !== '') {
+            console.log("nbPoints " + nbPoints);
+        }
+
+        let headers = {'Content-Type': 'application/json'};
         let options = {
             url: 'https://roads.googleapis.com/v1/nearestRoads',
             method: 'GET',
             headers: headers,
-            qs: {'points':crtpoints, 'key':'AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU'}
+            qs: {'points': crtpoints, 'key': APIkey}
         };
-        request.get(options, function(error, response, body) {
+        console.log(crtpoints);
+        request.get(options, function (error, response, body) {
             if (result === '' || body === '') {
                 result = result.concat(body);
             } else {
@@ -52,30 +86,18 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
             }
             mulReqCaller(points, add_hashvalue, result, callback);
         });
-    } else {
-        if (crtpoints !== '') {
-            result = (result + ',').concat(crtpoints);
-        }
-        if (add_hashvalue !== '') {
-            result = result + ',' + add_hashvalue;
-        }
-        storage.setItemSync(crt_hashkey, result);
-        result = ('{"allSnappedPoints":[').concat(result);
-        result = result.concat(']}');
-        /*fs = require('fs');
-        fs.writeFile('../jsonView', result, function (err) {
-            if (err)
-                return console.log(err);
-            console.log('Wrote result in file jsonView.txt, just check it');
-        });*/
-        last_hashkey = crt_hashkey;
-        last_viewport = crt_viewport;
-        callback(result);
     }
+
+    /*fs = require('fs');
+    fs.writeFile('../jsonView', result, function (err) {
+        if (err)
+            return console.log(err);
+        console.log('Wrote result in file jsonView.txt, just check it');
+    });*/
 }
 
 // Removes points in hashvalue that aren't contained in viewport
-function splitPoints (hashvalue, viewport, callback) {
+function splitPoints (hashvalue, viewport) {
     hashvalue = ('{"allSnappedPoints":[').concat(hashvalue);
     hashvalue = hashvalue.concat(']}');
     let points = JSON.parse(hashvalue);
@@ -91,16 +113,16 @@ function splitPoints (hashvalue, viewport, callback) {
         }
     }
     points = JSON.stringify(points);
-    callback(points.substring(21,points.length-2));
+    return points.substring(21, points.length-2);
 }
 
 // Checks if data can be pulled from cache and returns the biggest hashValue contained in viewport
-function cacheInCheck (viewport, callback) {
+function cacheInCheck (viewport) {
     let keys = storage.keys();
     let bestFit = [NaN,NaN];                                // First value represents the comparison value and the second value represents the best hashValue
     let result = '';
     for (let i = 0; i < keys.length; i++) {
-        var viewport_key = getViewPortFromKey(keys[i]);
+        let viewport_key = getViewPortFromKey(keys[i]);
         let SW_lng = parseFloat(viewport_key.pop());
         let SW_lat = parseFloat(viewport_key.pop());
         let NE_lng = parseFloat(viewport_key.pop());
@@ -111,26 +133,22 @@ function cacheInCheck (viewport, callback) {
                 bestFit[0] = cmpValue;
                 bestFit[1] = keys[i];
                 if (cmpValue === 0) {
-                    storage.getItem(bestFit[1], function(err, res) {
-                        result = 'YES|' + res;
-                        callback(result);
-                    });
+                    result = 'YES|' + bestFit[1];
+                    return result;
                 }
             }
         }
     }
     if (isNaN(bestFit[0])) {
-        callback('NOCACHE');
+        return 'NOCACHE';
     } else if (result === '') {
-        storage.getItem(bestFit[1], function(err, res) {
-            result = 'NO|' + res;
-            callback(result);
-        });
+        result = 'NO|' + bestFit[1];
+        return result;
     }
 }
 
 // Checks the hashValue containing the biggest part of the viewport
-function cacheNearCheck (viewport, callback) {
+function cacheNearCheck (viewport) {
     let keys = storage.keys();
     let bestFit = [NaN,NaN];                                // First value represents the comparison value and the second value represents the best hashValue
     for (let i = 0; i < keys.length; i++) {
@@ -190,11 +208,9 @@ function cacheNearCheck (viewport, callback) {
         }
     }
     if (isNaN(bestFit[0])) {
-        callback('NONEAR');
+        return 'NONEAR';
     } else {
-        storage.getItem(bestFit[1], function(err, res) {
-            callback(res);
-        });
+        return bestFit[1];
     }
 }
 
@@ -244,13 +260,13 @@ function generator (event, NE_lat, NE_lng, SW_lat, SW_lng, callback) {
     module.exports.crt_viewport = crt_viewport;
     module.exports.crt_hashkey = crt_hashkey;
 
+    //fiwStore();
+
     switch(event) {
         case 'loca': loca(storage, callback); return;
         case 'zoom': zoom(storage, callback); return;
         case 'drag': drag(storage, callback); return;
     }
-
-
 
     // FIND ROADS via OpenStreetMap
     /*let headers = {'Content-Type':'application/json'};
