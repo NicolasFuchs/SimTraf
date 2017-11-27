@@ -59,15 +59,11 @@ function zoom(storage, callback) {
                 });
             }
         } else {                                                       // Some points around the last_viewport hasn't been searched
-            console.log("SOME POINTS HAVE NOT BEEN SEARCHED");
+            //console.log("SOME POINTS HAVE NOT BEEN SEARCHED");
             let points = [];
             let reskey = gen.cacheNearCheck(crt_viewport);
             res = gen.getViewPortFromKey(reskey);
-            let totalPoints = 0;
             for (let k = 0; k < 4; k++) {
-
-                let pointsCheck = "";
-
                 let gran_lat, gran_lng;
                 let delta_lat, delta_lng;
                 let last_lat, last_lng;
@@ -82,41 +78,31 @@ function zoom(storage, callback) {
                     delta_lat = parseFloat(Math.abs(NE_lat-SW_lat) / gran_lat);
                     delta_lng = parseFloat(Math.abs(crt_viewport[k]-res[k]) / gran_lng);
                 }
-
                 switch (k) {                                            // Origin of the generated points grid
-                    case 0: last_lat = res[0]; last_lng = res[3]; break;
-                    case 1: last_lat = SW_lat; last_lng = res[1]; break;
-                    case 2: last_lat = SW_lat; last_lng = res[3]; break;
-                    case 3: last_lat = SW_lat; last_lng = SW_lng;
+                    case 0: last_lat = parseFloat(res[0]); last_lng = parseFloat(res[3]); break;
+                    case 1: last_lat = parseFloat(SW_lat); last_lng = parseFloat(res[1]); break;
+                    case 2: last_lat = parseFloat(SW_lat); last_lng = parseFloat(res[3]); break;
+                    case 3: last_lat = parseFloat(SW_lat); last_lng = parseFloat(SW_lng);
                 }
-
                 for (let i = 0; i < gran_lat; i++) {
                     for (let j = 0; j < gran_lng; j++) {
                         let new_lng = last_lng + delta_lng;
                         points.push(new_lng);
                         points.push(last_lat);
-
-                        pointsCheck += last_lat + "," + new_lng;
-
                         last_lng = new_lng;
-                        totalPoints += 2;
                     }
                     last_lat += delta_lat;
                     switch (k) {
-                        case 0: last_lng = res[3]; break;
-                        case 1: last_lng = res[1]; break;
-                        case 2: last_lng = res[3]; break;
-                        case 3: last_lng = SW_lng;
+                        case 0: last_lng = parseFloat(res[3]); break;
+                        case 1: last_lng = parseFloat(res[1]); break;
+                        case 2: last_lng = parseFloat(res[3]); break;
+                        case 3: last_lng = parseFloat(SW_lng);
                     }
                 }
-                console.log("Points for k = " + k + " : " + pointsCheck);
-                pointsCheck = "";
             }
-            console.log("totalPoints = " + totalPoints);
             storage.getItem(reskey, function(err, res){
-                //gen.mulReqCaller(points, res, "", callback);
+                gen.mulReqCaller(points, res, "", callback);
             });
-            //callback('{"allSnappedPoints":[{"snappedPoints": []}]}');
         }
     }
 }

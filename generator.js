@@ -39,16 +39,6 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
         result = result.concat(']}');
         last_hashkey = crt_hashkey;
         last_viewport = crt_viewport;
-
-        if (add_hashvalue !== "") {
-            let fs = require('fs');
-            fs.writeFile('../jsonView', result, function (err) {
-                if (err)
-                    return console.log(err);
-                console.log('Wrote result in file jsonView.txt, just check it');
-            });
-        }
-
         callback(result);
     } else {
         let request = require('request');
@@ -66,9 +56,6 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
         if (points.length > 0) {
             crtpoints += points.pop();
         }
-        if (add_hashvalue !== '') {
-            console.log("nbPoints " + nbPoints);
-        }
 
         let headers = {'Content-Type': 'application/json'};
         let options = {
@@ -77,7 +64,6 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
             headers: headers,
             qs: {'points': crtpoints, 'key': APIkey}
         };
-        console.log(crtpoints);
         request.get(options, function (error, response, body) {
             if (result === '' || body === '') {
                 result = result.concat(body);
@@ -116,7 +102,7 @@ function splitPoints (hashvalue, viewport) {
     return points.substring(21, points.length-2);
 }
 
-// Checks if data can be pulled from cache and returns the biggest hashValue contained in viewport
+// Checks if data can be pulled from cache and returns the most similar hashValue contained in viewport
 function cacheInCheck (viewport) {
     let keys = storage.keys();
     let bestFit = [NaN,NaN];                                // First value represents the comparison value and the second value represents the best hashValue
@@ -260,13 +246,13 @@ function generator (event, NE_lat, NE_lng, SW_lat, SW_lng, callback) {
     module.exports.crt_viewport = crt_viewport;
     module.exports.crt_hashkey = crt_hashkey;
 
-    //fiwStore();
+    fiwStore();
 
-    switch(event) {
+    /*switch(event) {
         case 'loca': loca(storage, callback); return;
         case 'zoom': zoom(storage, callback); return;
         case 'drag': drag(storage, callback); return;
-    }
+    }*/
 
     // FIND ROADS via OpenStreetMap
     /*let headers = {'Content-Type':'application/json'};

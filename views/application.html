@@ -31,7 +31,8 @@
                                 });
                                 let points;
                                 google.maps.event.addListenerOnce(map.map, "tilesloaded", function(){
-                                    $.get("http://localhost:3000/loca", {   NE_lat: map.map.getBounds().getNorthEast().lat(),
+                                    $.get("http://localhost:3000/loca", {
+                                        NE_lat: map.map.getBounds().getNorthEast().lat(),
                                         NE_lng: map.map.getBounds().getNorthEast().lng(),
                                         SW_lat: map.map.getBounds().getSouthWest().lat(),
                                         SW_lng: map.map.getBounds().getSouthWest().lng()},  function(data) {
@@ -69,11 +70,12 @@
                                         for (let i = 0; i < points.allSnappedPoints.length; i++) {
                                             for (let j = 0; j < points.allSnappedPoints[i].snappedPoints.length; j++) {
                                                 let point = points.allSnappedPoints[i].snappedPoints[j];
-                                                map.addMarker({
+                                                let marker = map.addMarker({
                                                     lat: point.location.latitude,
                                                     lng: point.location.longitude,
                                                     icon: '../public/images/point_green.png'
                                                 });
+                                                console.log(marker.lat);
                                             }
                                         }
                                     });
