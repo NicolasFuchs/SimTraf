@@ -27,7 +27,7 @@
                                     lat: latlng.lat(),
                                     lng: latlng.lng(),
                                     draggable: true,
-                                    scrollwheel: false
+                                    scrollwheel: true
                                 });
                                 let points;
                                 google.maps.event.addListenerOnce(map.map, "tilesloaded", function(){
@@ -54,7 +54,7 @@
                                     GMaps.geocode({
                                         address: $('#loc').val(),
                                         callback: function(results, status) {
-                                            if (status == 'OK') {
+                                            if (status === 'OK') {
                                                 latlng = results[0].geometry.location;
                                                 map.setCenter(latlng.lat(), latlng.lng());
                                             }
@@ -64,7 +64,6 @@
                                                                             NE_lng: map.map.getBounds().getNorthEast().lng(),
                                                                             SW_lat: map.map.getBounds().getSouthWest().lat(),
                                                                             SW_lng: map.map.getBounds().getSouthWest().lng()},  function(data) {
-                                        console.log('No marker is added');
                                         points = JSON.parse(data);
                                         // Loop used for json returned by google Maps (10000 points)
                                         for (let i = 0; i < points.allSnappedPoints.length; i++) {
@@ -75,7 +74,6 @@
                                                     lng: point.location.longitude,
                                                     icon: '../public/images/point_green.png'
                                                 });
-                                                console.log(marker.lat);
                                             }
                                         }
                                     });
@@ -91,13 +89,11 @@
                                                                             NE_lng: map.map.getBounds().getNorthEast().lng(),
                                                                             SW_lat: map.map.getBounds().getSouthWest().lat(),
                                                                             SW_lng: map.map.getBounds().getSouthWest().lng()},  function (data) {
-                                        //alert(data);
-                                        latlng = JSON.parse(data);
-                                        //map.removeMarkers();
+                                        points = JSON.parse(data);
                                         // Loop used for json returned by google Maps (10000 points)
-                                        for (let i = 0; i < latlng.allSnappedPoints.length; i++) {
-                                            for (let j = 0; j < latlng.allSnappedPoints[i].snappedPoints.length; j++) {
-                                                let point = latlng.allSnappedPoints[i].snappedPoints[j];
+                                        for (let i = 0; i < points.allSnappedPoints.length; i++) {
+                                            for (let j = 0; j < points.allSnappedPoints[i].snappedPoints.length; j++) {
+                                                let point = points.allSnappedPoints[i].snappedPoints[j];
                                                 map.addMarker({
                                                     lat: point.location.latitude,
                                                     lng: point.location.longitude,
@@ -105,8 +101,8 @@
                                                 });
                                             }
                                         }
+                                        map.setOptions({zoomControl: true});
                                     });
-                                    map.setOptions({zoomControl: true});
                                 });
                                 google.maps.event.addListener(map.map, "dragend", function() {
                                     map.setOptions({draggable: false});
@@ -114,12 +110,11 @@
                                                                             NE_lng: map.map.getBounds().getNorthEast().lng(),
                                                                             SW_lat: map.map.getBounds().getSouthWest().lat(),
                                                                             SW_lng: map.map.getBounds().getSouthWest().lng()},  function(data) {
-                                        //alert(data);
-                                        latlng = JSON.parse(data);
+                                        points = JSON.parse(data);
                                         // Loop used for json returned by google Maps (10000 points)
-                                        for (let i = 0; i < latlng.allSnappedPoints.length; i++) {
-                                            for (let j = 0; j < latlng.allSnappedPoints[i].snappedPoints.length; j++) {
-                                                let point = latlng.allSnappedPoints[i].snappedPoints[j];
+                                        for (let i = 0; i < points.allSnappedPoints.length; i++) {
+                                            for (let j = 0; j < points.allSnappedPoints[i].snappedPoints.length; j++) {
+                                                let point = points.allSnappedPoints[i].snappedPoints[j];
                                                 map.addMarker({
                                                     lat: point.location.latitude,
                                                     lng: point.location.longitude,

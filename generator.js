@@ -2,7 +2,9 @@ module.exports.generator = generator;
 module.exports.getViewPortFromKey = getViewPortFromKey;
 module.exports.cacheInCheck = cacheInCheck;
 module.exports.cacheNearCheck = cacheNearCheck;
+module.exports.pointsInViewport = pointsInViewport;
 module.exports.splitPoints = splitPoints;
+module.exports.pointsFromRectangles = pointsFromRectangles;
 module.exports.mulReqCaller = mulReqCaller;
 
 let storage = require('node-persist');
@@ -11,34 +13,44 @@ let loca = require('./loca.js');
 let zoom = require('./zoom.js');
 let drag = require('./drag.js');
 
-let fiwStore = require('./fiwareStorageTester');
-
 let crt_hashkey = '';       // Current hashkey
 let crt_viewport = [];      // Current viewport
-let last_hashkey = '';      // hashkey of last map view
-let last_viewport = [];     // viewport of last map view
+let last_viewport = [];     // Viewport of the last map
+
 let APIkey = 'AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU';
 
-//const map_diff_lat = 0.02211494699;
-//const map_diff_lng = 0.03218650819;
-//const granularity = 5000;           // On the default zoom level, 100 x 100 points are captured for ~ delta_lat = 0.02 and delta_lng = 0.02
-const granularity = 500;
+const granularity = 2000;
 
 module.exports.granularity = granularity;
-module.exports.last_hashkey = last_hashkey;
-module.exports.last_viewport = last_viewport;
 
 function mulReqCaller(points, add_hashvalue, result, callback) {
+    let startLength = points.length;
+    let gridPoints = '{"snappedPoints":[';
+    while(points.length > 0) {
+        if (startLength !== points.length) {
+            gridPoints = gridPoints.concat(',');
+        }
+        gridPoints = gridPoints.concat('{"location":{"latitude":');
+        gridPoints = gridPoints.concat(points.pop()); gridPoints = gridPoints.concat(',"longitude":');
+        gridPoints = gridPoints.concat(points.pop()); gridPoints = gridPoints.concat('}}');
+    }
+    gridPoints = gridPoints.concat(']}');
+    storage.setItemSync(crt_hashkey, gridPoints);
+    gridPoints = gridPoints.concat(']}');
+    gridPoints = ('{"allSnappedPoints":[').concat(gridPoints);
+    last_viewport = crt_viewport;
+    module.exports.last_viewport = last_viewport;
+    callback(gridPoints);
 
-    if (points.length === 0) {
+    /*if (points.length === 0) {
         if (add_hashvalue !== '') {
             result = result + ',' + add_hashvalue;
         }
         storage.setItemSync(crt_hashkey, result);
         result = ('{"allSnappedPoints":[').concat(result);
         result = result.concat(']}');
-        last_hashkey = crt_hashkey;
         last_viewport = crt_viewport;
+        module.exports.last_viewport = last_viewport;
         callback(result);
     } else {
         let request = require('request');
@@ -72,14 +84,31 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
             }
             mulReqCaller(points, add_hashvalue, result, callback);
         });
-    }
+    }*/
+}
 
-    /*fs = require('fs');
-    fs.writeFile('../jsonView', result, function (err) {
-        if (err)
-            return console.log(err);
-        console.log('Wrote result in file jsonView.txt, just check it');
-    });*/
+// Calculates grids of points from an array of rectangles
+function pointsFromRectangles (rectangles) {
+    let points = [];
+    for (let k = 0; k < rectangles.length; k++) {
+        let gran_lat = parseInt(Math.abs(rectangles[k][0]-rectangles[k][2]) * granularity);
+        let gran_lng = parseInt(Math.abs(rectangles[k][1]-rectangles[k][3]) * granularity);
+        let delta_lat = parseFloat(Math.abs(rectangles[k][0]-rectangles[k][2]) / gran_lat);
+        let delta_lng = parseFloat(Math.abs(rectangles[k][1]-rectangles[k][3]) / gran_lng);
+        let last_lat = parseFloat(rectangles[k][2]);
+        let last_lng = parseFloat(rectangles[k][3]);
+
+        for (let i = 0; i <= gran_lat; i++) {
+            for (let j = 0; j <= gran_lng; j++) {
+                points.push(last_lng);
+                points.push(last_lat);
+                last_lng += delta_lng;
+            }
+            last_lat += delta_lat;
+            last_lng = parseFloat(rectangles[k][3]);
+        }
+    }
+    return points;
 }
 
 // Removes points in hashvalue that aren't contained in viewport
@@ -136,16 +165,18 @@ function cacheInCheck (viewport) {
 // Checks the hashValue containing the biggest part of the viewport
 function cacheNearCheck (viewport) {
     let keys = storage.keys();
-    let bestFit = [NaN,NaN];                                // First value represents the comparison value and the second value represents the best hashValue
+    let bestFit = [NaN,NaN,[]];                                // First value represents the comparison value and the second value represents the best hashValue
     for (let i = 0; i < keys.length; i++) {
-        var viewport_key = getViewPortFromKey(keys[i]);
-        let SW_lng = parseFloat(viewport_key.pop());
-        let SW_lat = parseFloat(viewport_key.pop());
-        let NE_lng = parseFloat(viewport_key.pop());
-        let NE_lat = parseFloat(viewport_key.pop());
+        let viewport_key = getViewPortFromKey(keys[i]);
+        let NE_lat = parseFloat(viewport_key[0]);
+        let NE_lng = parseFloat(viewport_key[1]);
+        let SW_lat = parseFloat(viewport_key[2]);
+        let SW_lng = parseFloat(viewport_key[3]);
+
         let hash_points = [[NE_lat,NE_lng],[SW_lat,NE_lng],[SW_lat,SW_lng],[NE_lat,SW_lng]];
-        let view_points = [viewport[0],viewport[1],[viewport[2],viewport[1]],[viewport[2],viewport[3]],[viewport[0],viewport[3]]];
+        let view_points = [[viewport[0],viewport[1]],[viewport[2],viewport[1]],[viewport[2],viewport[3]],[viewport[0],viewport[3]]];
         let points_in = pointsInViewport(hash_points, viewport);
+        let rectangles = [];
 
         let area = NaN;
         let num_in = 0;
@@ -167,12 +198,30 @@ function cacheNearCheck (viewport) {
                             }
                         }
                     }
+                    if (viewport_key[1] > crt_viewport[3] && viewport_key[1] < crt_viewport[1]) {
+                        rectangles = [[crt_viewport[0], crt_viewport[1], crt_viewport[2], viewport_key[1]]];
+                    } else if (points_in[1]) {
+                        rectangles = [[viewport_key[2], crt_viewport[1], crt_viewport[2], crt_viewport[3]]];
+                    } else if (points_in[2]) {
+                        rectangles = [[crt_viewport[0], viewport_key[3], crt_viewport[2], crt_viewport[3]]];
+                    } else if (points_in[3]) {
+                        rectangles = [[crt_viewport[0], crt_viewport[1], viewport_key[0], crt_viewport[3]]];
+                    }
                     break;
             case 1: for (let j = 0; j < 4; j++) {
                         if (points_in[j]) {
                             area = Math.abs((hash_points[j][0]-view_points[(j+2)%4][0]) * (hash_points[j][1]-view_points[(j+2)%4][1]));
                             break;
                         }
+                    }
+                    if (points_in[0]) {
+                        rectangles = [[crt_viewport[0], viewport_key[1], viewport_key[0], crt_viewport[3]], [crt_viewport[0], crt_viewport[1], crt_viewport[2], viewport_key[1]]];
+                    } else if (points_in[1]) {
+                        rectangles = [[viewport_key[2], viewport_key[1], crt_viewport[2], crt_viewport[3]], [crt_viewport[0], crt_viewport[1], crt_viewport[2], viewport_key[1]]];
+                    } else if (points_in[2]) {
+                        rectangles = [[crt_viewport[0], viewport_key[3], crt_viewport[2], crt_viewport[3]], [viewport_key[2], crt_viewport[1], crt_viewport[2], viewport_key[3]]];
+                    } else if (points_in[3]) {
+                        rectangles = [[crt_viewport[0], viewport_key[3], crt_viewport[2], crt_viewport[3]], [crt_viewport[0], crt_viewport[1], viewport_key[0], viewport_key[3]]];
                     }
                     break;
             case 2: for (let j = 0; j < 4; j++) {
@@ -185,18 +234,29 @@ function cacheNearCheck (viewport) {
                             break;
                         }
                     }
+                    if (points_in[0] && points_in[1]) {
+                        rectangles = [[crt_viewport[0], crt_viewport[1], viewport_key[0], crt_viewport[3]], [viewport_key[0], crt_viewport[1], viewport_key[2], viewport_key[1]], [viewport_key[2], crt_viewport[1], crt_viewport[2], crt_viewport[3]]];
+                    } else if (points_in[1] && points_in[2]) {
+                        rectangles = [[crt_viewport[0], viewport_key[3], crt_viewport[2], crt_viewport[3]], [viewport_key[2], viewport_key[1], crt_viewport[2], viewport_key[3]], [crt_viewport[0], crt_viewport[1], crt_viewport[2], viewport_key[1]]];
+                    } else if (points_in[2] && points_in[3]) {
+                        rectangles = [[crt_viewport[0], crt_viewport[1], viewport_key[0], crt_viewport[3]], [viewport_key[0], viewport_key[3], viewport_key[2], crt_viewport[3]], [viewport_key[2], crt_viewport[1], crt_viewport[2], crt_viewport[3]]];
+                    } else if (points_in[3] && points_in[0]) {
+                        rectangles = [[crt_viewport[0], viewport_key[3], crt_viewport[2], crt_viewport[3]], [crt_viewport[0], viewport_key[1], viewport_key[0], viewport_key[3]], [crt_viewport[0], crt_viewport[1], viewport_key[0], viewport_key[1]]];
+                    }
                     break;
             case 4: area = (NE_lat-SW_lat) * (NE_lng-SW_lng);
+                    rectangles = [[crt_viewport[0], viewport_key[3], crt_viewport[2], crt_viewport[3]], [viewport_key[2], viewport_key[1], crt_viewport[2], viewport_key[3]], [crt_viewport[0], crt_viewport[1], crt_viewport[2], viewport_key[1]], [crt_viewport[0], viewport_key[1], viewport_key[0], viewport_key[3]]];
         }
         if (isNaN(bestFit[0]) || (area > bestFit[0])) {
             bestFit[0] = area;
             bestFit[1] = keys[i];
+            bestFit[2] = rectangles;
         }
     }
     if (isNaN(bestFit[0])) {
         return 'NONEAR';
     } else {
-        return bestFit[1];
+        return [bestFit[1],bestFit[2]];
     }
 }
 
@@ -230,7 +290,6 @@ function getViewPortFromKey (hashkey) {
 }
 
 function generator (event, NE_lat, NE_lng, SW_lat, SW_lng, callback) {
-
     storage.initSync({
         dir: '../persist',
         stringify: JSON.stringify,
@@ -242,54 +301,12 @@ function generator (event, NE_lat, NE_lng, SW_lat, SW_lng, callback) {
 
     crt_hashkey = NE_lat + ',' +  NE_lng + ',' + SW_lat + ',' + SW_lng;
     crt_viewport = [NE_lat, NE_lng, SW_lat, SW_lng];
-
     module.exports.crt_viewport = crt_viewport;
     module.exports.crt_hashkey = crt_hashkey;
 
-    fiwStore();
-
-    /*switch(event) {
+    switch(event) {
         case 'loca': loca(storage, callback); return;
         case 'zoom': zoom(storage, callback); return;
         case 'drag': drag(storage, callback); return;
-    }*/
-
-    // FIND ROADS via OpenStreetMap
-    /*let headers = {'Content-Type':'application/json'};
-    let options = {
-        url: 'http://overpass-api.de/api/interpreter?data=[out:json];node('+SW_lat+','+SW_lng+','+NE_lat+','+NE_lng+');out;',
-        method: 'GET',
-        headers: headers,
-    };
-    request.get(options, function(error, response, body) {
-        storage.setItemSync(hashkey,body);
-        callback(body);
-    });*/
-
-    // NEAREST ROAD(S) FOUND TO POINTS version @google/maps client
-    /*let googleMapsClient = require('@google/maps').createClient({
-        key: 'AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU'
-    });
-    let json;
-    googleMapsClient.nearestRoads({
-        points: {
-            lat: 46.61105834518564,
-            lng: 6.88276125408936
-        }
-    },function(err,response){
-        json = response.json.results;
-    });*/
-
-    // DIRECTION BETWEEN TWO POINTS
-    /*let headers = {'Content-Type':'application/json'};
-    let options = {
-        url: 'https://maps.googleapis.com/maps/api/directions/json',
-        method: 'GET',
-        headers: headers,
-        qs: {'origin':'46.60157247983388,6.869748830795288', 'destination':'46.5982994636952,6.863290071487427', 'mode':'driving', 'key':'AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU'}
-    };
-    request.get(options, function(error, response, body) {
-        callback(body);
-    });*/
-
+    }
 }

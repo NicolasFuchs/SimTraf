@@ -1,6 +1,6 @@
-module.exports = fiwareStorageTester;
+orionTester();
 
-function fiwareStorageTester() {
+function orionTester() {
     let request = require('request');
     let headers = { 'Content-Type': 'application/json',
         'Fiware-Service' : 'mobicam',
@@ -34,9 +34,9 @@ function fiwareStorageTester() {
         headers: headers,
         body: data
     };
-    request(options, function (error, response, body) {
-        if (!error && response.statusCode === 200) {
-            console.log("Storage body : " + body);
+    //request(options, function (error, response, body) {
+        //if (!error && response.statusCode === 200) {
+            //console.log("Storage body : " + body);
             data = '{ \
                 "entities": [ \
                     { \
@@ -58,15 +58,15 @@ function fiwareStorageTester() {
                     console.log("Retrieval body : " + body);
                     let jsonBody = JSON.parse(body);
                     for (let i = 0; i < jsonBody.contextResponses.length; i++) {
-                        console.log(jsonBody.contextResponses[i]);
+                        console.log(jsonBody.contextResponses[i].contextElement.attributes);
                     }
                 } else {
                     console.log("Retrieval : An issue has occured");
                 }
             });
 
-        } else {
-            console.log("Storage : An issue has occured");
-        }
-    });
+        //} else {
+        //    console.log("Storage : An issue has occured");
+        //}
+    //});
 }
