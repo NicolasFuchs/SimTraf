@@ -14,6 +14,7 @@ function drag(storage, callback) {
                 storage.setItem(crt_hashkey, split_res, function() {
                     let hashvalue = ('{"allSnappedPoints":[').concat(split_res);
                     hashvalue = hashvalue.concat(']}');
+                    gen.last_viewport = crt_viewport;
                     callback(hashvalue);
                 });
             });
@@ -21,6 +22,7 @@ function drag(storage, callback) {
             storage.getItem(restab[1], function(err, res) {
                 let hashvalue = ('{"allSnappedPoints":[').concat(res);
                 hashvalue = hashvalue.concat(']}');
+                gen.last_viewport = crt_viewport;
                 callback(hashvalue);
             });
         }

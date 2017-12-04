@@ -24,7 +24,7 @@ const granularity = 2000;
 module.exports.granularity = granularity;
 
 function mulReqCaller(points, add_hashvalue, result, callback) {
-    let startLength = points.length;
+    /*let startLength = points.length;
     let gridPoints = '{"snappedPoints":[';
     while(points.length > 0) {
         if (startLength !== points.length) {
@@ -40,11 +40,11 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
     gridPoints = ('{"allSnappedPoints":[').concat(gridPoints);
     last_viewport = crt_viewport;
     module.exports.last_viewport = last_viewport;
-    callback(gridPoints);
+    callback(gridPoints);*/
 
-    /*if (points.length === 0) {
+    if (points.length === 0) {
         if (add_hashvalue !== '') {
-            result = result + ',' + add_hashvalue;
+            result = result + ',' + splitPoints(add_hashvalue, crt_viewport);
         }
         storage.setItemSync(crt_hashkey, result);
         result = ('{"allSnappedPoints":[').concat(result);
@@ -84,7 +84,7 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
             }
             mulReqCaller(points, add_hashvalue, result, callback);
         });
-    }*/
+    }
 }
 
 // Calculates grids of points from an array of rectangles
@@ -198,14 +198,14 @@ function cacheNearCheck (viewport) {
                             }
                         }
                     }
-                    if (viewport_key[1] > crt_viewport[3] && viewport_key[1] < crt_viewport[1]) {
-                        rectangles = [[crt_viewport[0], crt_viewport[1], crt_viewport[2], viewport_key[1]]];
-                    } else if (points_in[1]) {
-                        rectangles = [[viewport_key[2], crt_viewport[1], crt_viewport[2], crt_viewport[3]]];
-                    } else if (points_in[2]) {
-                        rectangles = [[crt_viewport[0], viewport_key[3], crt_viewport[2], crt_viewport[3]]];
-                    } else if (points_in[3]) {
+                    if (viewport_key[0] > crt_viewport[2] && viewport_key[0] < crt_viewport[0]) {
                         rectangles = [[crt_viewport[0], crt_viewport[1], viewport_key[0], crt_viewport[3]]];
+                    } else if (viewport_key[1] > crt_viewport[3] && viewport_key[1] < crt_viewport[1]) {
+                        rectangles = [[crt_viewport[0], crt_viewport[1], crt_viewport[2], viewport_key[1]]];
+                    } else if (viewport_key[2] > crt_viewport[2] && viewport_key[2] < crt_viewport[0]) {
+                        rectangles = [[viewport_key[2], crt_viewport[1], crt_viewport[2], crt_viewport[3]]];
+                    } else if (viewport_key[3] > crt_viewport[3] && viewport_key[3] < crt_viewport[1]) {
+                        rectangles = [[crt_viewport[0], viewport_key[3], crt_viewport[2], crt_viewport[3]]];
                     }
                     break;
             case 1: for (let j = 0; j < 4; j++) {

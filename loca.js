@@ -10,10 +10,11 @@ function loca(storage, callback) {
         if (res) {
             res = ('{"allSnappedPoints":[').concat(res);
             res = res.concat(']}');
+            gen.last_viewport = crt_viewport;
             callback(res);
         } else {
             let points = gen.pointsFromRectangles(rectangle);
-            gen.mulReqCaller(points, "", "", callback); // Call of the nearest roads function (google API)
+            gen.mulReqCaller(points, "", "", callback);
         }
     });
 }

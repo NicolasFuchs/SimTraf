@@ -16,14 +16,18 @@ function zoom(storage, callback) {
                     storage.setItem(crt_hashkey, split_res, function() {
                         let hashvalue = ('{"allSnappedPoints":[').concat(split_res);
                         hashvalue = hashvalue.concat(']}');
-                        callback(hashvalue);
+                        gen.last_viewport = crt_viewport;
+                        callback('{"allSnappedPoints":[{"snappedPoints":[]}]}');    // DOESN'T ADD POINT WHEN WE ZOOM IN
+                        //callback(hashvalue);
                     });
                 });
             } else if (restab[0] === 'YES') {                                       // res fit exactly in viewport
                 storage.getItem(restab[1], function(err, res) {
                     let hashvalue = ('{"allSnappedPoints":[').concat(res);
                     hashvalue = hashvalue.concat(']}');
-                    callback(hashvalue);
+                    gen.last_viewport = crt_viewport;
+                    callback('{"allSnappedPoints":[{"snappedPoints":[]}]}');        // DOESN'T ADD POINT WHEN WE ZOOM IN
+                    //callback(hashvalue);
                 });
             }
         } else {
@@ -39,14 +43,18 @@ function zoom(storage, callback) {
                     storage.setItem(crt_hashkey, split_res, function() {
                         let hashvalue = ('{"allSnappedPoints":[').concat(split_res);
                         hashvalue = hashvalue.concat(']}');
-                        callback(hashvalue);
+                        gen.last_viewport = crt_viewport;
+                        callback('{"allSnappedPoints":[{"snappedPoints":[]}]}');    // DOESN'T ADD POINT WHEN WE ZOOM OUT
+                        //callback(hashvalue);
                     });
                 });
             } else if (restab[0] === 'YES') {                                       // res fit exactly in viewport
                 storage.getItem(restab[1], function(err, res) {
                     let hashvalue = ('{"allSnappedPoints":[').concat(res);
                     hashvalue = hashvalue.concat(']}');
-                    callback(hashvalue);
+                    gen.last_viewport = crt_viewport;
+                    callback('{"allSnappedPoints":[{"snappedPoints":[]}]}');        // DOESN'T ADD POINT WHEN WE ZOOM OUT
+                    //callback(hashvalue);
                 });
             }
         } else {                                                                    // Some points around the last_viewport hasn't been searched

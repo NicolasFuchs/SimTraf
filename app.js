@@ -6,6 +6,7 @@ let cookieParser = require('cookie-parser');
 let bodyParser = require('body-parser');
 let app = express();
 let gen = require('./generator.js');
+let spinner = require('loading-spinner');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -20,10 +21,12 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/loca', function (req, res) {
+    spinner.start();
     gen.generator('loca', parseFloat(req.query.NE_lat), parseFloat(req.query.NE_lng), parseFloat(req.query.SW_lat), parseFloat(req.query.SW_lng), function(msg) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "X-Requested-With");
         res.send(msg);
+        spinner.stop();
     });
 });
 app.get('/zoom', function (req, res) {

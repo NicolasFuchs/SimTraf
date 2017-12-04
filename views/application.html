@@ -5,8 +5,10 @@
         <script src="../node_modules/jquery/dist/jquery.min.js"></script>
         <script src="http://maps.google.com/maps/api/js?key=AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU"></script>
         <script src="../node_modules/gmaps/gmaps.js"></script>
+        <!--<script src="https://github.com/Wirecloud/wirecloud/tree/0.9.x/docs/widgetapi"></script>-->
     </head>
     <body>
+    <iframe src="https://mashup.lab.fiware.org/nicolas-fuchs/simtraf?mode=embedded&theme=wirecloud.fiwarelabdarktheme" style="width: 100%; height: 450px; border: 0px none;" frameborder="0" allowfullscreen></iframe>
         <h1 style="text-align: center">SimTraf visualisation</h1>
         <div style="margin: 0 auto; text-align: center; margin-bottom: 30px">
             <label>Location</label>
@@ -15,6 +17,38 @@
         </div>
         <div id="map" style="width:750px; height:750px; margin: 0 auto"></div>
         <script>
+
+            /*alert(MashupPlatform.context.get("username"));
+
+            MashupPlatform.mashup.createWorkspace({
+                name: 'WorkTest',
+                onSuccess: function (workspace) {
+                    alert(workspace.owner + "/" + workspace.name + " created successfully");
+                }
+            });
+
+            let widget = MashupPlatform.mashup.addWidget('CoNWeT/map-viewer/2.5.8', {
+                "permissions": {
+                    "close": false,
+                    "configure": false
+                },
+                "preferences": {
+                    "stand-alone": {
+                        "value": false
+                    }
+                },
+                "top": "0px",
+                "left": "66%"
+            });
+
+            let operator = MashupPlatform.mashup.addOperator('CoNWeT/ngsientity2poi/3.0.3', {
+                "preferences": {
+                    "coordinates_attr": {
+                        "value": "current_position"
+                    }
+                }
+            });*/
+
             $(document).ready(function(){
                 $('#sub').one('click', function() {
                     GMaps.geocode({
