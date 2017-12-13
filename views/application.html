@@ -5,49 +5,28 @@
         <script src="../node_modules/jquery/dist/jquery.min.js"></script>
         <script src="http://maps.google.com/maps/api/js?key=AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU"></script>
         <script src="../node_modules/gmaps/gmaps.js"></script>
-        <!--<script src="https://github.com/Wirecloud/wirecloud/tree/0.9.x/docs/widgetapi"></script>-->
     </head>
     <body>
-    <iframe src="https://mashup.lab.fiware.org/nicolas-fuchs/simtraf?mode=embedded&theme=wirecloud.fiwarelabdarktheme" style="width: 100%; height: 450px; border: 0px none;" frameborder="0" allowfullscreen></iframe>
+    <!--<iframe src="https://mashup.lab.fiware.org/nicolas-fuchs/simtraf?mode=embedded&theme=wirecloud.fiwarelabdarktheme" style="width: 100%; height: 800px; border: 0px none;" frameborder="0" allowfullscreen></iframe>-->
         <h1 style="text-align: center">SimTraf visualisation</h1>
         <div style="margin: 0 auto; text-align: center; margin-bottom: 30px">
             <label>Location</label>
             <input type="text" id="loc" value="Porsel">
             <input type="submit" id="sub" value="show map">
         </div>
+        <div>
+            <label>Scenario</label>
+            <select id="scena" name="scenario">
+                <option value="cut">car_usu_transit</option>
+                <option value="aut">all_usu_transit</option>
+                <option value="act">all_con_transit</option>
+                <option value="aup">all_usu_parking</option>
+                <option value="cmt">car_min_timing</option>
+            </select>
+            <input type="range" id="sli">
+        </div>
         <div id="map" style="width:750px; height:750px; margin: 0 auto"></div>
         <script>
-
-            /*alert(MashupPlatform.context.get("username"));
-
-            MashupPlatform.mashup.createWorkspace({
-                name: 'WorkTest',
-                onSuccess: function (workspace) {
-                    alert(workspace.owner + "/" + workspace.name + " created successfully");
-                }
-            });
-
-            let widget = MashupPlatform.mashup.addWidget('CoNWeT/map-viewer/2.5.8', {
-                "permissions": {
-                    "close": false,
-                    "configure": false
-                },
-                "preferences": {
-                    "stand-alone": {
-                        "value": false
-                    }
-                },
-                "top": "0px",
-                "left": "66%"
-            });
-
-            let operator = MashupPlatform.mashup.addOperator('CoNWeT/ngsientity2poi/3.0.3', {
-                "preferences": {
-                    "coordinates_attr": {
-                        "value": "current_position"
-                    }
-                }
-            });*/
 
             $(document).ready(function(){
                 $('#sub').one('click', function() {
@@ -65,22 +44,39 @@
                                 });
                                 let points;
                                 google.maps.event.addListenerOnce(map.map, "tilesloaded", function(){
-                                    $.get("http://localhost:3000/loca", {
-                                        NE_lat: map.map.getBounds().getNorthEast().lat(),
-                                        NE_lng: map.map.getBounds().getNorthEast().lng(),
-                                        SW_lat: map.map.getBounds().getSouthWest().lat(),
-                                        SW_lng: map.map.getBounds().getSouthWest().lng()},  function(data) {
-                                        points = JSON.parse(data);
+                                    $.get("http://localhost:3000/loca", {   scena: $("#scena :selected").val(),
+                                                                            NE_lat: map.map.getBounds().getNorthEast().lat(),
+                                                                            NE_lng: map.map.getBounds().getNorthEast().lng(),
+                                                                            SW_lat: map.map.getBounds().getSouthWest().lat(),
+                                                                            SW_lng: map.map.getBounds().getSouthWest().lng()},  function(data) {
+                                        points = JSON.parse(data[0]);
                                         // Loop used for json returned by google Maps (10000 points)
                                         for (let i = 0; i < points.allSnappedPoints.length; i++) {
                                             for (let j = 0; j < points.allSnappedPoints[i].snappedPoints.length; j++) {
                                                 let point = points.allSnappedPoints[i].snappedPoints[j];
+                                                console.log("lat " + point.location.latitude);
+                                                console.log("lng " + point.location.longitude);
                                                 map.addMarker({
                                                     lat: point.location.latitude,
                                                     lng: point.location.longitude,
                                                     icon: '../public/images/point_green.png'
                                                 });
                                             }
+                                        }
+                                        let pathes = data[1];
+                                        //console.log("pathes " + pathes);
+                                        //setTimeout(animation(0), 2000);
+                                        function animation(i) {
+                                            map.removeMarkers();
+                                            for (let k = 0; k < pathes.length; k++) {
+                                                let jsonPath = JSON.parse(pathes[k]);
+                                                let marker = map.addMarker({
+                                                    lat: jsonPath.routes.legs.steps[i%jsonPath.routes.legs.steps].end_location.lat,
+                                                    lng: jsonPath.routes.legs.steps[i%jsonPath.routes.legs.steps].end_location.lng,
+                                                    icon: '../public/images/point_green.png'
+                                                });
+                                            }
+                                            setTimeout(animation(i+1), 2000);
                                         }
                                     });
                                 });
@@ -94,11 +90,14 @@
                                             }
                                         }
                                     });
-                                    $.get("http://localhost:3000/loca", {   NE_lat: map.map.getBounds().getNorthEast().lat(),
+                                    $.get("http://localhost:3000/loca", {   scena: $("#scena :selected").val(),
+                                                                            NE_lat: map.map.getBounds().getNorthEast().lat(),
                                                                             NE_lng: map.map.getBounds().getNorthEast().lng(),
                                                                             SW_lat: map.map.getBounds().getSouthWest().lat(),
                                                                             SW_lng: map.map.getBounds().getSouthWest().lng()},  function(data) {
-                                        points = JSON.parse(data);
+                                        console.log(data[0]);
+                                        points = JSON.parse(data[0]);
+                                        map.removeMarkers();
                                         // Loop used for json returned by google Maps (10000 points)
                                         for (let i = 0; i < points.allSnappedPoints.length; i++) {
                                             for (let j = 0; j < points.allSnappedPoints[i].snappedPoints.length; j++) {
@@ -110,6 +109,21 @@
                                                 });
                                             }
                                         }
+                                        let pathes = data[1];
+                                        //console.log("pathes " + pathes);
+                                        //setTimeout(animation(0), 2000);
+                                        function animation(i) {
+                                            map.removeMarkers();
+                                            for (let k = 0; k < pathes.length; k++) {
+                                                let jsonPath = JSON.parse(pathes[k]);
+                                                let marker = map.addMarker({
+                                                    lat: jsonPath.routes.legs.steps[i%jsonPath.routes.legs.steps].end_location.lat,
+                                                    lng: jsonPath.routes.legs.steps[i%jsonPath.routes.legs.steps].end_location.lng,
+                                                    icon: '../public/images/point_green.png'
+                                                });
+                                            }
+                                            setTimeout(animation(i+1), 2000);
+                                        }
                                     });
                                 });
                                 $(document).keypress(function(e) {
@@ -119,7 +133,8 @@
                                 });
                                 google.maps.event.addListener(map.map, "zoom_changed", function() {
                                     map.setOptions({zoomControl: false});
-                                    $.get("http://localhost:3000/zoom", {   NE_lat: map.map.getBounds().getNorthEast().lat(),
+                                    $.get("http://localhost:3000/zoom", {   scena: $("#scena :selected").val(),
+                                                                            NE_lat: map.map.getBounds().getNorthEast().lat(),
                                                                             NE_lng: map.map.getBounds().getNorthEast().lng(),
                                                                             SW_lat: map.map.getBounds().getSouthWest().lat(),
                                                                             SW_lng: map.map.getBounds().getSouthWest().lng()},  function (data) {
@@ -140,7 +155,8 @@
                                 });
                                 google.maps.event.addListener(map.map, "dragend", function() {
                                     map.setOptions({draggable: false});
-                                    $.get("http://localhost:3000/drag", {   NE_lat: map.map.getBounds().getNorthEast().lat(),
+                                    $.get("http://localhost:3000/drag", {   scena: $("#scena :selected").val(),
+                                                                            NE_lat: map.map.getBounds().getNorthEast().lat(),
                                                                             NE_lng: map.map.getBounds().getNorthEast().lng(),
                                                                             SW_lat: map.map.getBounds().getSouthWest().lat(),
                                                                             SW_lng: map.map.getBounds().getSouthWest().lng()},  function(data) {

@@ -18,6 +18,7 @@ let crt_viewport = [];      // Current viewport
 let last_viewport = [];     // Viewport of the last map
 
 let APIkey = 'AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU';
+module.exports.APIkey = APIkey;
 
 const granularity = 2000;
 

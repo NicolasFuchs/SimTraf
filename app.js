@@ -6,6 +6,8 @@ let cookieParser = require('cookie-parser');
 let bodyParser = require('body-parser');
 let app = express();
 let gen = require('./generator.js');
+let sel = require('./selector.js');
+let pat = require('./pathFinder.js');
 let spinner = require('loading-spinner');
 
 // view engine setup
@@ -23,10 +25,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/loca', function (req, res) {
     spinner.start();
     gen.generator('loca', parseFloat(req.query.NE_lat), parseFloat(req.query.NE_lng), parseFloat(req.query.SW_lat), parseFloat(req.query.SW_lng), function(msg) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "X-Requested-With");
-        res.send(msg);
-        spinner.stop();
+        sel.selector(msg, req.query.scena, function(vehicles) {
+            pat.pathFinder(vehicles, msg, req.query.scena, function(vehiclesAndPathes) {
+                res.header("Access-Control-Allow-Origin", "*");
+                res.header("Access-Control-Allow-Headers", "X-Requested-With");
+                console.log(vehiclesAndPathes);
+                res.send(vehiclesAndPathes);
+                spinner.stop();
+            });
+        });
     });
 });
 app.get('/zoom', function (req, res) {

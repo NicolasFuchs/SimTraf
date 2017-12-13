@@ -99,3 +99,12 @@ for (let i = 0; i < points.allSnappedPoints.length; i++) {
 const map_diff_lat = 0.02211494699;
 const map_diff_lng = 0.03218650819;
 const granularity = 5000;           // On the default zoom level, 100 x 100 points are captured for ~ delta_lat = 0.02 and delta_lng = 0.02
+
+
+/**********************************************************************************************************************/
+
+
+// Usage of Orion context broker API version 2 - Context Creation
+url: 'http://inuit-labs.ing.he-arc.ch/orion/v2/entities'
+// Usage of Orion context broker API version 2 - Context Query
+url: 'http://inuit-labs.ing.he-arc.ch/orion/v1/contextEntities/Car4'
