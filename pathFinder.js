@@ -4,7 +4,6 @@ let gen = require('./generator.js');
 let request = require('request');
 
 function pathFinder(v, points, scenario, callback) {
-    let vehicles = JSON.parse(v);
     let pathes = [];
     switch(scenario) {
         case "cut" : // car_usual_traffic
@@ -20,14 +19,15 @@ function pathFinder(v, points, scenario, callback) {
             let meetingPoint = findACenteredPoint(points);
             let destination = (meetingPoint[0].toString()).concat(',');
             destination += meetingPoint[1];
-            callDirectionsAPI(vehicles, 0, 0);
-            function callDirectionsAPI(vehicles, i, j) {
+            callDirectionsAPI(v, 0, 0);
+            function callDirectionsAPI(v, i, j) {
+                let vehicles = JSON.parse(v);
                 if (i === vehicles.allSnappedPoints.length) {
-                    console.log(pathes);
-                    callback([vehicles, pathes]);
+                    //callback([v, pathes]);
+                    callback([v, buildFullPathes(pathes)]);
                     return;
                 } else if (j === vehicles.allSnappedPoints[i].snappedPoints.length) {
-                    callDirectionsAPI(vehicles, i+1, 0);
+                    callDirectionsAPI(v, i+1, 0);
                     return;
                 }
                 let point = vehicles.allSnappedPoints[i].snappedPoints[j];
@@ -40,12 +40,41 @@ function pathFinder(v, points, scenario, callback) {
                     qs: {'origin': origin, 'destination': destination, 'mode': 'driving', 'key': gen.APIkey}
                 };
                 request.get(options, function (error, response, body) {
-                    console.log("body = " + body);
-                    pathes.push(JSON.stringify(body));
-                    callDirectionsAPI(vehicles, i, j+1);
+                    pathes.push(body);
+                    callDirectionsAPI(v, i, j+1);
                 });
             }
     }
+}
+
+// Google Maps Directions API responds too few points with the steps to have a real vehicle movement, polyline attribute of the response has to be used and some points added
+function buildFullPathes(pathes) {
+    console.log("pathes " + pathes);
+    let decodePolyline = require('decode-google-map-polyline');
+    let allPathes = [];
+    let path = [];
+    for (let p = 0; p < pathes.length; p++) {
+        let jsonPath = JSON.parse(pathes[p]);
+        path = [];
+        for (let r = 0; r < jsonPath.routes.length; r++) {
+            for (let l = 0; l < jsonPath.routes[r].legs.length; l++) {
+                for (let s = 0; s < jsonPath.routes[r].legs[l].steps.length; s++) {
+                    console.log(decodePolyline(jsonPath.routes[r].legs[l].steps[s].polyline.points));
+                    path = path.concat(decodePolyline(jsonPath.routes[r].legs[l].steps[s].polyline.points));
+                }
+            }
+        }
+        for (let i = 0; i < path.length; i++) {
+            path[i] = JSON.stringify(path[i]);
+        }
+        allPathes.push(path);
+    }
+    console.log("ALLPATHES ");
+    for (let i = 0; i < allPathes.length; i++) {
+        console.log("CASE " + i);
+        console.log(allPathes[i]);
+    }
+    return allPathes;
 }
 
 // Finds a random point in a centered square on the map

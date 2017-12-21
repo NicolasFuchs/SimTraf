@@ -40,6 +40,7 @@ function selector(points, scenario, callback) {
             let pob = pointsOnBorder(jsonPoints, viewport);
             let npob = pob.length/2;
             nbPtc = (npob < 10)?npob:10;
+            nbPtc = 1;
             for (let i = 0; i < nbPtc; i++) {
                 do {
                     random = Math.floor(Math.random()*npob)*2;
@@ -50,7 +51,6 @@ function selector(points, scenario, callback) {
             }
             chosenPoints = buildJSON(chosenPoints, true);
     }
-    console.log(chosenPoints);
     callback(chosenPoints);
 }
 

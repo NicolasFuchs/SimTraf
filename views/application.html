@@ -3,7 +3,7 @@
     <head>
         <title>Web application</title>
         <script src="../node_modules/jquery/dist/jquery.min.js"></script>
-        <script src="http://maps.google.com/maps/api/js?key=AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU"></script>
+        <script src="http://maps.google.com/maps/api/js?key=AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU&libraries=geometry"></script>
         <script src="../node_modules/gmaps/gmaps.js"></script>
     </head>
     <body>
@@ -49,13 +49,12 @@
                                                                             NE_lng: map.map.getBounds().getNorthEast().lng(),
                                                                             SW_lat: map.map.getBounds().getSouthWest().lat(),
                                                                             SW_lng: map.map.getBounds().getSouthWest().lng()},  function(data) {
+                                        console.log(data[0]);
                                         points = JSON.parse(data[0]);
                                         // Loop used for json returned by google Maps (10000 points)
                                         for (let i = 0; i < points.allSnappedPoints.length; i++) {
                                             for (let j = 0; j < points.allSnappedPoints[i].snappedPoints.length; j++) {
                                                 let point = points.allSnappedPoints[i].snappedPoints[j];
-                                                console.log("lat " + point.location.latitude);
-                                                console.log("lng " + point.location.longitude);
                                                 map.addMarker({
                                                     lat: point.location.latitude,
                                                     lng: point.location.longitude,
@@ -65,19 +64,91 @@
                                         }
                                         let pathes = data[1];
                                         //console.log("pathes " + pathes);
-                                        //setTimeout(animation(0), 2000);
+                                        //console.log("pathes[0] " + pathes[0]);
+                                        let jsonPath;
+                                        let simulEnd = 0;
+                                        /*for (let p = 0; p < pathes.length; p++) {
+                                            pathes[p] = JSON.parse(pathes[p]);
+                                        }*/
+                                        /*pathes = [  {"routes":[{"legs":[{"steps":[{"end_location":{"lat":46.59808,"lng":6.879980000000001}},{"end_location":{"lat":46.5993339,"lng":6.8802148}}]}]}]},
+                                                    {"routes":[{"legs":[{"steps":[{"end_location":{"lat":46.601037,"lng":6.876985}},{"end_location":{"lat":46.60199,"lng":6.876049999999999}}]}]}]},
+                                                    {"routes":[{"legs":[{"steps":[{"end_location":{"lat":46.6026368,"lng":6.872285499999999}},{"end_location":{"lat":46.6027158,"lng":6.8714945}}]}]}]}
+                                        ];*/
+
+                                        let pathArray;
+                                        setTimeout(function(){animation(0);}, 1000);
                                         function animation(i) {
                                             map.removeMarkers();
-                                            for (let k = 0; k < pathes.length; k++) {
-                                                let jsonPath = JSON.parse(pathes[k]);
-                                                let marker = map.addMarker({
-                                                    lat: jsonPath.routes.legs.steps[i%jsonPath.routes.legs.steps].end_location.lat,
-                                                    lng: jsonPath.routes.legs.steps[i%jsonPath.routes.legs.steps].end_location.lng,
+                                            for (let p = 0; p < pathes.length; p++) {
+                                                pathArray = pathes[p];
+                                                i = checkI(i);
+                                                let latlng = JSON.parse(pathArray[i]);
+                                                map.addMarker({
+                                                    lat: latlng.lat,
+                                                    lng: latlng.lng,
                                                     icon: '../public/images/point_green.png'
                                                 });
                                             }
-                                            setTimeout(animation(i+1), 2000);
+                                            if (simulEnd !== pathes.length) {
+                                                simulEnd = 0;
+                                                setTimeout(function(){animation(i+1);}, 1000);
+                                            }
                                         }
+
+                                        function checkI(i) {
+                                            if (i === pathArray.length) {
+                                                simulEnd++;
+                                                i -= 1;
+                                            }
+                                            return i;
+                                        }
+
+                                        //setTimeout(function(){animation(0,0,0);}, 2000);
+                                        /*function animation(r,l,s) {
+                                            map.removeMarkers();
+                                            for (let p = 0; p < pathes.length; p++) {
+                                                jsonPath = pathes[p];
+                                                let rls = checkRLS(r,l,s);
+                                                let nr = rls[0]; let nl = rls [1]; let ns = rls[2];
+                                                map.addMarker({
+                                                    lat: jsonPath.routes[nr].legs[nl].steps[ns].end_location.lat,
+                                                    lng: jsonPath.routes[nr].legs[nl].steps[ns].end_location.lng,
+                                                    icon: '../public/images/point_green.png'
+                                                });
+                                            }
+                                            if (simulEnd !== pathes.length) {
+                                                simulEnd = 0;
+                                                setTimeout(function(){animation(r, l, s+1);}, 2000);
+                                            }
+                                        };
+                                        function checkRLS(r,l,s) {
+                                            if (s === jsonPath.routes[r].legs[l].steps.length) {
+                                                l += 1; s = 0;
+                                            }
+                                            if (l === jsonPath.routes[r].legs.length) {
+                                                r += 1; l = 0; s = 0;
+                                            }
+                                            if (r === jsonPath.routes.length) {
+                                                r -= 1; l = jsonPath.routes[r].legs.length-1 ; s = jsonPath.routes[r].legs[l].steps.length-1;
+                                                simulEnd++;
+                                            }
+                                            return [r,l,s];
+                                        }*/
+
+
+                                                /*for (let r = 0; r < jsonPath.routes.length; r++) {
+                                                    for (let l = 0; l < jsonPath.routes[r].legs.length; l++) {
+                                                        for (let s = 0; s < jsonPath.routes[r].legs[l].steps.length; s++) {
+                                                            let marker = map.addMarker({
+                                                                lat: jsonPath.routes[r].legs[l].steps[s].end_location.lat,
+                                                                lng: jsonPath.routes[r].legs[l].steps[s].end_location.lng,
+                                                                icon: '../public/images/point_green.png'
+                                                            });
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }*/
                                     });
                                 });
                                 $('#sub').click(function() {
@@ -111,9 +182,9 @@
                                         }
                                         let pathes = data[1];
                                         //console.log("pathes " + pathes);
-                                        //setTimeout(animation(0), 2000);
+                                        setTimeout(animation(0), 2000);
                                         function animation(i) {
-                                            map.removeMarkers();
+                                            alert("One round");
                                             for (let k = 0; k < pathes.length; k++) {
                                                 let jsonPath = JSON.parse(pathes[k]);
                                                 let marker = map.addMarker({
@@ -133,7 +204,7 @@
                                 });
                                 google.maps.event.addListener(map.map, "zoom_changed", function() {
                                     map.setOptions({zoomControl: false});
-                                    $.get("http://localhost:3000/zoom", {   scena: $("#scena :selected").val(),
+                                    /*$.get("http://localhost:3000/zoom", {   scena: $("#scena :selected").val(),
                                                                             NE_lat: map.map.getBounds().getNorthEast().lat(),
                                                                             NE_lng: map.map.getBounds().getNorthEast().lng(),
                                                                             SW_lat: map.map.getBounds().getSouthWest().lat(),
@@ -151,11 +222,11 @@
                                             }
                                         }
                                         map.setOptions({zoomControl: true});
-                                    });
+                                    });*/
                                 });
                                 google.maps.event.addListener(map.map, "dragend", function() {
                                     map.setOptions({draggable: false});
-                                    $.get("http://localhost:3000/drag", {   scena: $("#scena :selected").val(),
+                                    /*$.get("http://localhost:3000/drag", {   scena: $("#scena :selected").val(),
                                                                             NE_lat: map.map.getBounds().getNorthEast().lat(),
                                                                             NE_lng: map.map.getBounds().getNorthEast().lng(),
                                                                             SW_lat: map.map.getBounds().getSouthWest().lat(),
@@ -173,15 +244,15 @@
                                             }
                                         }
                                         // Loop used for json returned by OpenStreetMap
-                                        /*for (let i = 0; i < latlng.elements.length; i++) {
+                                        for (let i = 0; i < latlng.elements.length; i++) {
                                             map.addMarker({
                                                 lat: latlng.elements[i].lat,
                                                 lng: latlng.elements[i].lon,
                                                 icon: '../public/images/point_green.png'
                                             });
-                                        }*/
+                                        }
                                         map.setOptions({draggable: true});
-                                    });
+                                    });*/
                                 });
                             } else {
                                 alert("Sorry, the geocoder has not found the entered address !");
