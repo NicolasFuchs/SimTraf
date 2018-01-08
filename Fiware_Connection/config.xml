@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWet" name="simtraf" version="0.6">
+<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWet" name="simtraf_connection" version="0.8">
     <details>
-        <title>SimTraf Controls</title>
-        <!--<homepage></homepage>-->
+        <title>SimTraf Connection</title>
         <authors>Nicolas Fuchs</authors>
         <contributors>HumanTech HEIA-FR</contributors>
         <email>nicolas.fuchs@edu.hefr.ch</email>
         <image>images/simtraf.png</image>
-        <description>Basic controls to display vehicles on a map</description>
-        <!--<longdescription></longdescription>-->
+        <description>Basic connection between fiware public server and SimTraf backend server</description>
         <license>No License</license>
-        <!--<licenseurl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseurl>-->
-        <!--<doc></doc>-->
     </details>
     <wiring>
         <outputendpoint name="locationOutput" type="text" label="location selected" description="A location has been chosen to be displayed on map" friendcode="locationOutput"/>
     </wiring>
     <contents src="index.html" useplatformstyle="true"/>
-    <rendering width="5" height="18"/>
+    <rendering width="5" height="10"/>
 </widget>

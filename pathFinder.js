@@ -4,17 +4,20 @@ let gen = require('./generator.js');
 let request = require('request');
 
 function pathFinder(v, points, scenario, callback) {
+    console.log("v : " + v);
+    console.log("points : " + points);
+    console.log("scenario : " + scenario);
     let pathes = [];
     switch(scenario) {
-        case "cut" : // car_usual_traffic
+        case "car usual transit" :
             break;
-        case "aut" : // all_usual_traffic
+        case "all usual transit" :
             break;
-        case "act" : // all_congested_traffic
+        case "all congested transit" :
             break;
-        case "aup" : // all_usual_parking
+        case "all usual parking" :
             break;
-        case "cmt" : // car_min_timing
+        case "car minimal timing" :
 
             let meetingPoint = findACenteredPoint(points);
             let destination = (meetingPoint[0].toString()).concat(',');
@@ -22,16 +25,18 @@ function pathFinder(v, points, scenario, callback) {
             callDirectionsAPI(v, 0, 0);
             function callDirectionsAPI(v, i, j) {
                 let vehicles = JSON.parse(v);
-                if (i === vehicles.allSnappedPoints.length) {
-                    //callback([v, pathes]);
-                    callback([v, buildFullPathes(pathes)]);
-                    return;
+                /*if (i === vehicles.allSnappedPoints.length) {
+                    callback([v, buildFullPathes(pathes)]); return;
                 } else if (j === vehicles.allSnappedPoints[i].snappedPoints.length) {
-                    callDirectionsAPI(v, i+1, 0);
-                    return;
+                    callDirectionsAPI(v, i+1, 0); return;
                 }
                 let point = vehicles.allSnappedPoints[i].snappedPoints[j];
-                let origin = point.location.latitude + "," + point.location.longitude;
+                let origin = point.location.latitude + "," + point.location.longitude;*/
+                if (i === vehicles.contextElements.length) {
+                    callback([v, buildFullPathes(pathes)]); return;
+                }
+                let origin = vehicles.contextElements[i].attributes[4].value;
+
                 let headers = {'Content-Type': 'application/json'};
                 let options = {
                     url: 'https://maps.googleapis.com/maps/api/directions/json',
@@ -41,7 +46,8 @@ function pathFinder(v, points, scenario, callback) {
                 };
                 request.get(options, function (error, response, body) {
                     pathes.push(body);
-                    callDirectionsAPI(v, i, j+1);
+                    //callDirectionsAPI(v, i, j+1);
+                    callDirectionsAPI(v, i+1);
                 });
             }
     }
@@ -49,7 +55,6 @@ function pathFinder(v, points, scenario, callback) {
 
 // Google Maps Directions API responds too few points with the steps to have a real vehicle movement, polyline attribute of the response has to be used and some points added
 function buildFullPathes(pathes) {
-    console.log("pathes " + pathes);
     let decodePolyline = require('decode-google-map-polyline');
     let allPathes = [];
     let path = [];
@@ -59,7 +64,6 @@ function buildFullPathes(pathes) {
         for (let r = 0; r < jsonPath.routes.length; r++) {
             for (let l = 0; l < jsonPath.routes[r].legs.length; l++) {
                 for (let s = 0; s < jsonPath.routes[r].legs[l].steps.length; s++) {
-                    console.log(decodePolyline(jsonPath.routes[r].legs[l].steps[s].polyline.points));
                     path = path.concat(decodePolyline(jsonPath.routes[r].legs[l].steps[s].polyline.points));
                 }
             }
@@ -68,11 +72,6 @@ function buildFullPathes(pathes) {
             path[i] = JSON.stringify(path[i]);
         }
         allPathes.push(path);
-    }
-    console.log("ALLPATHES ");
-    for (let i = 0; i < allPathes.length; i++) {
-        console.log("CASE " + i);
-        console.log(allPathes[i]);
     }
     return allPathes;
 }
@@ -85,7 +84,7 @@ function findACenteredPoint(points) {
     let b = gen.crt_viewport[2]+(1/4)*(gen.crt_viewport[0]-gen.crt_viewport[2]);
     let l = gen.crt_viewport[3]+(1/4)*(gen.crt_viewport[1]-gen.crt_viewport[3]);
     let centeredPoints = [];
-    jsonpoints = JSON.parse(points);
+    let jsonpoints = JSON.parse(points);
     for (let i = 0; i < jsonpoints.allSnappedPoints.length; i++) {
         for (let j = 0; j < jsonpoints.allSnappedPoints[i].snappedPoints.length; j++) {
             let point = jsonpoints.allSnappedPoints[i].snappedPoints[j];

@@ -20,7 +20,7 @@ let last_viewport = [];     // Viewport of the last map
 let APIkey = 'AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU';
 module.exports.APIkey = APIkey;
 
-const granularity = 2000;
+const granularity = 500;
 
 module.exports.granularity = granularity;
 
@@ -44,7 +44,7 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
     callback(gridPoints);*/
 
     if (points.length === 0) {
-        if (add_hashvalue !== '') {
+        if (add_hashvalue !== "") {
             result = result + ',' + splitPoints(add_hashvalue, crt_viewport);
         }
         storage.setItemSync(crt_hashkey, result);
@@ -57,10 +57,8 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
         let request = require('request');
         let crtpoints = '';
         crtpoints += points.pop() + ',';
-        let nbPoints = 0;
         for (let i = 1; points.length > 0 && i < 199; i++) {            // One nearest roads request can't contain more than 100 points (200 lat/lng)
             crtpoints += points.pop();
-            nbPoints++;
             if (points.length !== 0) {
                 if (i % 2 === 0) crtpoints += ',';
                 else if (i < 198) crtpoints += '|';
@@ -70,6 +68,8 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
             crtpoints += points.pop();
         }
 
+        console.log("crtpoints : " + crtpoints);
+
         let headers = {'Content-Type': 'application/json'};
         let options = {
             url: 'https://roads.googleapis.com/v1/nearestRoads',
@@ -78,11 +78,20 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
             qs: {'points': crtpoints, 'key': APIkey}
         };
         request.get(options, function (error, response, body) {
-            if (result === '' || body === '') {
+            /*if (result === '' || body === '') {
                 result = result.concat(body);
             } else {
                 result = (result + ',').concat(body);
+            }*/
+            if (result === "" && body !== "{}\n") {
+                result = result.concat(body);
+            } else if (body !== "{}\n") {
+                result = (result + ',').concat(body);
             }
+            console.log("error : " + error);
+            console.log("response : " + response);
+            console.log("response : " + JSON.stringify(response));
+            console.log("body : " + body);
             mulReqCaller(points, add_hashvalue, result, callback);
         });
     }
@@ -98,7 +107,6 @@ function pointsFromRectangles (rectangles) {
         let delta_lng = parseFloat(Math.abs(rectangles[k][1]-rectangles[k][3]) / gran_lng);
         let last_lat = parseFloat(rectangles[k][2]);
         let last_lng = parseFloat(rectangles[k][3]);
-
         for (let i = 0; i <= gran_lat; i++) {
             for (let j = 0; j <= gran_lng; j++) {
                 points.push(last_lng);

@@ -1,10 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
+    <meta http-equiv="Content-Type" content="application/xhtml+xml" charset="UTF-8">
+    <script src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    <script>
+        let isrunning = true;
+        $(document).ready(function(){
+            $('#play').click(function(){
+                if (isrunning) {
+                    $('#play').attr('src', 'images/paused.png');
+                    isrunning = false;
+                } else {
+                    $('#play').attr('src', 'images/playing.png');
+                    isrunning = true;
+                }
+            });
+        });
+    </script>
+    <!--<link rel="stylesheet" type="text/css" href="../public/stylesheets/style.css"/>-->
+    <title>Simulation run</title>
+    <style>
+        div {
+            text-align: center;
+        }
+        button {
+            width: 400px;
+            height: 50px;
+            display: block;
+            margin: auto;
+        }
+        img {
+            width: 100px;
+            height: 100px;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <div>
+        <img src="images/backward.png" alt="backward arrow">
+        <img src="images/paused.png" alt="play/pause" id="play">
+        <img src="images/forward.png" alt="forward arrow">
+    </div>
+    <div>
+        <button onclick="window.location.href='index.html'">Menu</button>
+    </div>
 </body>
 </html>

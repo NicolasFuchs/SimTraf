@@ -15,7 +15,7 @@ let headers = {
     'Fiware-ServicePath': '/'
 };
 let options = {
-    url: 'http://130.206.80.43:4061/iot/services',
+    url: 'http://160.98.10.15:4041/iot/services',
     method: 'POST',
     headers: headers,
     body: JSON.stringify(jsonData)

@@ -26,13 +26,19 @@ function drag(storage, callback) {
                 callback(hashvalue);
             });
         }
-    } else {                                                                    // Some points around the last_viewport hasn't been searched
+    } else {                                                                    // Some points around the last_viewport haven't been searched
         let cacheNear = gen.cacheNearCheck(crt_viewport);
-        let reskey = cacheNear[0];
-        let rectangles = cacheNear[1];
-        let points = gen.pointsFromRectangles(rectangles);
-        storage.getItem(reskey, function(err, res){
-            gen.mulReqCaller(points, res, "", callback);
-        });
+        if (cacheNear === "NONEAR") {
+            let rectangles = [crt_viewport];
+            let points = gen.pointsFromRectangles(rectangles);
+            gen.mulReqCaller(points, "", "", callback);
+        } else {
+            let reskey = cacheNear[0];
+            let rectangles = cacheNear[1];
+            let points = gen.pointsFromRectangles(rectangles);
+            storage.getItem(reskey, function (err, res) {
+                gen.mulReqCaller(points, res, "", callback);
+            });
+        }
     }
 }

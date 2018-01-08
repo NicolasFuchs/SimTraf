@@ -319,6 +319,43 @@ function linkOrionToCygnus() {
     });
 }
 
+/*******************************  API version 2  *******************************/
+/*
+function linkOrionToCygnus() {
+    let jsonData = {
+        "description": "A subscription to get info about " + vehicleID,
+        "subject": {
+            "entities": [{
+                    "id": vehicleID,
+                    "type": "Vehicle"
+            }],
+            "condition": {"attrs": ["location"]}
+        },
+        "notification": {
+            "http": {"url": "http://" + IPaddress + ":5050/notify"},
+            "attrs": ["location"]
+        },
+        "expires": "2040-01-01T14:00:00.00Z"
+    };
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Fiware-Service': 'SIMTRAF',
+        'Fiware-ServicePath': '/'
+    };
+    options = {
+        url: 'http://' + IPaddress + ':1026/v2/subscriptions',
+        method: 'POST',
+        headers: headers,
+        json: jsonData
+    };
+    request(options, function (error, response, body) {
+        console.log("error " + error);
+        console.log("response " + JSON.stringify(response));
+        console.log("body " + JSON.stringify(body));
+    });
+}
+*/
 /**********************************************************************************************************************/
 /****************************************************  Orion and STH  *************************************************/
 /**********************************************************************************************************************/
@@ -350,7 +387,6 @@ function linkOrionToSTH() {
         json: jsonData
     };
     request(options, function (error, response, body) {
-        subscriptionId = body.subscribeResponse.subscriptionId;
         console.log("error " + error);
         console.log("response " + JSON.stringify(response));
         console.log("body " + JSON.stringify(body));
@@ -361,7 +397,7 @@ function linkOrionToSTH() {
 /*
 function linkOrionToSTH() {
     let jsonData = {
-        "description": "A subscription to get info about Room1",
+        "description": "A subscription to get info about " + vehicleID,
         "subject": {
             "entities": [{
                     "id": vehicleID,
@@ -374,7 +410,6 @@ function linkOrionToSTH() {
             "attrs": ["location"]
         },
         "expires": "2040-01-01T14:00:00.00Z",
-        "throttling": 5
     };
     headers = {
         'Content-Type': 'application/json',
@@ -470,17 +505,17 @@ function s_notification() {
 /*******************************************************  Testing  ****************************************************/
 /**********************************************************************************************************************/
 
-vehicleID = 'Car1';
+vehicleID = 'Car2';
 IPaddress = '160.98.10.15';
-//IPaddress = '130.206.80.43'; // Public IP address of Orion
+subscriptionId = '5a3b94efa9019d35cbd89acb';
 
-//o_deletion();
+o_deletion();
 //o_creation();
 //o_update();
 //o_retrieval();
 
 //linkOrionToCygnus();
-linkOrionToSTH();
+//linkOrionToSTH();
 
 //s_deletion();
 //s_retrieval();

@@ -1,6 +1,16 @@
 $(document).ready(function(){
-    $('#sub').one('click', function() {
-        alert('Button pressed!');
-        MashupPlatform.wiring.pushEvent('locationOutput', document.getElementById("loc").value);
+    $('#connect').click(function() {
+        MashupPlatform.http.makeRequest('https://simtraf.localtunnel.me/tunnel', {
+            method: "GET",
+            contentType: "text/plain",
+            responseType: "text",
+            onSuccess: function (res) {
+                alert('res.response : ' + res.response);
+                MashupPlatform.wiring.pushEvent('locationOutput', res.response);
+            },
+            onFailure: function (response) {
+                alert('Something went wrong!');
+            }
+        });
     });
 });

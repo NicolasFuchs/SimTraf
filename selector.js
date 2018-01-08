@@ -16,27 +16,27 @@ function selector(points, scenario, callback) {
     let nbPtc;  // Number of Points to choose
     let random;
     switch(scenario) {
-        case "cut" : // car_usual_traffic
+        case "car usual transit" :
             nbPtc = Math.floor((Math.random()*(9/5000)*nbP)+(1/5000)*nbP);
             cp = choosePoints(jsonPoints, nbPtc);
             chosenPoints = buildJSON(cp, true);
             break;
-        case "aut" : // all_usual_traffic
+        case "all usual transit" :
             nbPtc = Math.floor((Math.random()*(9/5000)*nbP)+(1/5000)*nbP);
             cp = choosePoints(jsonPoints, nbPtc);
             chosenPoints = buildJSON(cp, false);
             break;
-        case "act" : // all_congested_traffic
+        case "all congested transit" :
             nbPtc = Math.floor((Math.random()*(1/100)*nbP)+(9/100)*nbP);
             cp = choosePoints(jsonPoints, nbPtc);
             chosenPoints = buildJSON(cp, false);
             break;
-        case "aup" : // all_usual_parking
+        case "all usual parking" :
             nbPtc = Math.floor((Math.random()*(9/5000)*nbP)+(1/5000)*nbP);
             cp = choosePoints(jsonPoints, nbPtc);
             chosenPoints = buildJSON(cp, false);
             break;
-        case "cmt" : // car_min_timing
+        case "car minimal timing" :
             let pob = pointsOnBorder(jsonPoints, viewport);
             let npob = pob.length/2;
             nbPtc = (npob < 10)?npob:10;
@@ -74,11 +74,14 @@ function choosePoints(jsonPoints, nbPtc) {
 }
 
 function buildJSON(chosenPoints, onlyCars) {
-    let vehicles = '{"allSnappedPoints":[{"snappedPoints":[';
+    //let vehicles = '{"allSnappedPoints":[{"snappedPoints":[';
+    let vehicles = '{"contextElements":[';
+    let date = new Date().toISOString();
     for (let i = 0; i < chosenPoints.length; i++) {
         if (i !== 0) {
             vehicles = vehicles.concat(',');
         }
+        /*
         vehicles = vehicles.concat('{"timestamp":"');
         vehicles = vehicles.concat(Date.now().toString());
         vehicles = vehicles.concat('",');
@@ -101,9 +104,38 @@ function buildJSON(chosenPoints, onlyCars) {
         vehicles = vehicles.concat('"longitude":');
         vehicles = vehicles.concat(chosenPoints[i]);
         vehicles = vehicles.concat('}}');
+        */
+        vehicles = vehicles.concat('{"type":"Vehicle","isPattern":"false","id":"');
+        vehicles = vehicles.concat(randomId());
+        vehicles = vehicles.concat('","attributes":[');
+        vehicles = vehicles.concat('{"name":"vehiclePlateIdentifier","type":"string","value":"');
+        vehicles = vehicles.concat(randomPlate());
+        vehicles = vehicles.concat('"},');
+        vehicles = vehicles.concat('{"name":"vehicleType","type":"string","value":"');
+        vehicles = vehicles.concat((onlyCars || Math.random() >= 0.5)?'Car':'Motorcycle');
+        vehicles = vehicles.concat('"},');
+        vehicles = vehicles.concat('{"name":"brandName","type":"string","value":"');
+        vehicles = vehicles.concat((onlyCars || Math.random() >= 0.5)?randomBrandName(true):randomBrandName(false));
+        vehicles = vehicles.concat('"},');
+        vehicles = vehicles.concat('{"name":"color","type":"string","value":"');
+        vehicles = vehicles.concat(randomColor());
+        vehicles = vehicles.concat('"},');
+        vehicles = vehicles.concat('{"name":"location","type":"geo:point","value":"');
+        vehicles = vehicles.concat(chosenPoints[i++]);
+        vehicles = vehicles.concat(',');
+        vehicles = vehicles.concat(chosenPoints[i]);
+        vehicles = vehicles.concat('"},');
+        vehicles = vehicles.concat('{"name":"timestamp","type":"Date","value":"');
+        vehicles = vehicles.concat(date);
+        vehicles = vehicles.concat('"}]}');
     }
-    vehicles = vehicles.concat(']}]}');
+    //vehicles = vehicles.concat(']}]}');
+    vehicles = vehicles.concat('],"updateAction": "APPEND"}');
     return vehicles;
+}
+
+function randomId() {
+    return "Car" + Math.floor(Math.random()*1000000);
 }
 
 function randomPlate() {
@@ -135,7 +167,9 @@ function numberPoints(points) {
     let np = 0;
     for (let i = 0; i < points.allSnappedPoints.length; i++) {
         for (let j = 0; j < points.allSnappedPoints[i].snappedPoints.length; j++) {
-            np += points.allSnappedPoints[i].snappedPoints.length;
+            if (points.allSnappedPoints[i].snappedPoints !== "{}") {
+                np += points.allSnappedPoints[i].snappedPoints.length;
+            }
         }
     }
     return np;

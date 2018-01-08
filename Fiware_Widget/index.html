@@ -5,25 +5,84 @@
     <script src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
     <!--<link rel="stylesheet" type="text/css" href="../public/stylesheets/style.css"/>-->
-    <title>Widget controls</title>
+    <title>SimTraf Controls</title>
+    <style>
+        div { text-align: center; }
+        button { width: 400px; height: 50px; display: block; margin: auto; }
+        table, th, tr { border: 1px solid black; border-collapse: collapse; }
+        img { width: 100px; height: 100px; }
+        #Creation_Choice { margin-top: 50px; }
+        #Creation, #Choice, #Run { display: none; }
+    </style>
 </head>
 <body>
-    <div>
-        <label>Location</label>
-        <input type="text" id="loc" value="Porsel">
-        <input type="submit" id="sub" value="show map">
 
+    <!-- Menu -->
+    <div id="Menu">
+        <button id="Menu_Creation">Create new scenario</button>
+        <button id="Menu_Choice">Choose scenario</button>
     </div>
-    <div>
-        <label>Scenario</label>
-        <select name="scenario">
-            <option value="cut">car_usu_transit</option>
-            <option value="aut">all_usu_transit</option>
-            <option value="act">all_con_transit</option>
-            <option value="aup">all_usu_parking</option>
-            <option value="cmt">car_min_timing</option>
-        </select>
-        <input type="range" id="sli">
+
+    <!-- Scenario creation -->
+    <div id="Creation">
+        <div>
+            <label>Scenario name</label>
+            <input type="text" id="s_name">
+        </div>
+        <div>
+            <label>Scenario location</label>
+            <input type="text" id="s_loc">
+        </div>
+        <div id="scenarios">
+            <button id="cut">car usual transit</button>
+            <button id="aut">all usual transit</button>
+            <button id="act">all congested transit</button>
+            <button id="aup">all usual parking</button>
+            <button id="cmt">car minimal timing</button>
+        </div>
+
+        <button id="Creation_Choice">Create scenario</button>
     </div>
+
+    <!-- Scenario choice -->
+    <div id="Choice">
+        <div>
+            <table id="createdList">
+                <tbody>
+                    <tr>
+                        <th>Scenario name</th>
+                        <th>Scenario type</th>
+                        <th>Location</th>
+                    </tr>
+                    <!--<tr>
+                        <td>First scenario</td>
+                        <td>car usual traffic</td>
+                        <td>Fribourg</td>
+                    </tr>
+                    <tr>
+                        <td>Bouchons</td>
+                        <td>all congested traffic</td>
+                        <td>Lausanne</td>
+                    </tr>-->
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <button id="Choice_Run">Run simulation</button>
+        </div>
+    </div>
+
+    <!-- Simulation run -->
+    <div id="Run">
+        <div>
+            <img src="images/backward.png" alt="backward arrow">
+            <img src="images/paused.png" alt="play/pause" id="play">
+            <img src="images/forward.png" alt="forward arrow">
+        </div>
+        <div>
+            <button id="Run_Menu">Menu</button>
+        </div>
+    </div>
+
 </body>
 </html>
