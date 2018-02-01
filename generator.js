@@ -9,8 +9,6 @@ module.exports.mulReqCaller = mulReqCaller;
 
 let storage = require('node-persist');
 
-let loca = require('./loca.js');
-let zoom = require('./zoom.js');
 let drag = require('./drag.js');
 
 let crt_hashkey = '';       // Current hashkey
@@ -20,29 +18,11 @@ let last_viewport = [];     // Viewport of the last map
 let APIkey = 'AIzaSyCtfkCcjL5cvhCb8cdncY95T4qLicNOYMU';
 module.exports.APIkey = APIkey;
 
-const granularity = 500;
+const granularity = 1000;
 
 module.exports.granularity = granularity;
 
 function mulReqCaller(points, add_hashvalue, result, callback) {
-    /*let startLength = points.length;
-    let gridPoints = '{"snappedPoints":[';
-    while(points.length > 0) {
-        if (startLength !== points.length) {
-            gridPoints = gridPoints.concat(',');
-        }
-        gridPoints = gridPoints.concat('{"location":{"latitude":');
-        gridPoints = gridPoints.concat(points.pop()); gridPoints = gridPoints.concat(',"longitude":');
-        gridPoints = gridPoints.concat(points.pop()); gridPoints = gridPoints.concat('}}');
-    }
-    gridPoints = gridPoints.concat(']}');
-    storage.setItemSync(crt_hashkey, gridPoints);
-    gridPoints = gridPoints.concat(']}');
-    gridPoints = ('{"allSnappedPoints":[').concat(gridPoints);
-    last_viewport = crt_viewport;
-    module.exports.last_viewport = last_viewport;
-    callback(gridPoints);*/
-
     if (points.length === 0) {
         if (add_hashvalue !== "") {
             result = result + ',' + splitPoints(add_hashvalue, crt_viewport);
@@ -67,9 +47,6 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
         if (points.length > 0) {
             crtpoints += points.pop();
         }
-
-        console.log("crtpoints : " + crtpoints);
-
         let headers = {'Content-Type': 'application/json'};
         let options = {
             url: 'https://roads.googleapis.com/v1/nearestRoads',
@@ -78,20 +55,11 @@ function mulReqCaller(points, add_hashvalue, result, callback) {
             qs: {'points': crtpoints, 'key': APIkey}
         };
         request.get(options, function (error, response, body) {
-            /*if (result === '' || body === '') {
-                result = result.concat(body);
-            } else {
-                result = (result + ',').concat(body);
-            }*/
             if (result === "" && body !== "{}\n") {
                 result = result.concat(body);
             } else if (body !== "{}\n") {
                 result = (result + ',').concat(body);
             }
-            console.log("error : " + error);
-            console.log("response : " + response);
-            console.log("response : " + JSON.stringify(response));
-            console.log("body : " + body);
             mulReqCaller(points, add_hashvalue, result, callback);
         });
     }
@@ -140,12 +108,13 @@ function splitPoints (hashvalue, viewport) {
     return points.substring(21, points.length-2);
 }
 
-// Checks if data can be pulled from cache and returns the most similar hashValue contained in viewport
+// Checks if data can be pulled from cache and returns the most similar hashKey contained in viewport
 function cacheInCheck (viewport) {
     let keys = storage.keys();
-    let bestFit = [NaN,NaN];                                // First value represents the comparison value and the second value represents the best hashValue
+    let bestFit = [NaN,NaN];                                // First value represents the comparison value and the second value represents the best hashKey
     let result = '';
     for (let i = 0; i < keys.length; i++) {
+        if (keys[i] === 'scenarios') continue;
         let viewport_key = getViewPortFromKey(keys[i]);
         let SW_lng = parseFloat(viewport_key.pop());
         let SW_lat = parseFloat(viewport_key.pop());
@@ -176,6 +145,7 @@ function cacheNearCheck (viewport) {
     let keys = storage.keys();
     let bestFit = [NaN,NaN,[]];                                // First value represents the comparison value and the second value represents the best hashValue
     for (let i = 0; i < keys.length; i++) {
+        if (keys[i] === 'scenarios') continue;
         let viewport_key = getViewPortFromKey(keys[i]);
         let NE_lat = parseFloat(viewport_key[0]);
         let NE_lng = parseFloat(viewport_key[1]);
@@ -298,7 +268,7 @@ function getViewPortFromKey (hashkey) {
     return pointsArray;
 }
 
-function generator (event, NE_lat, NE_lng, SW_lat, SW_lng, callback) {
+function generator (NE_lat, NE_lng, SW_lat, SW_lng, callback) {
     storage.initSync({
         dir: '../persist',
         stringify: JSON.stringify,
@@ -313,9 +283,5 @@ function generator (event, NE_lat, NE_lng, SW_lat, SW_lng, callback) {
     module.exports.crt_viewport = crt_viewport;
     module.exports.crt_hashkey = crt_hashkey;
 
-    switch(event) {
-        case 'loca': loca(storage, callback); return;
-        case 'zoom': zoom(storage, callback); return;
-        case 'drag': drag(storage, callback); return;
-    }
+    drag(storage, callback);
 }

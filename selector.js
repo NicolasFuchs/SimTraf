@@ -2,12 +2,11 @@ module.exports.selector = selector;
 
 let gen = require('./generator.js');
 
-let VEHICLE_TYPES = ["Car","Motorcycle"/*,"Bus","Van","Motorscooter","AgriculturalVehicle"*/];
 let CAR_BRANDS = ["BMW","Mercedes-Benz","VW","Ferrari","Corvette","Maserati","Audi"];
 let MOTORCYCLE_BRANDS = ["Ducati","Honda","BMW","Kawasaki","Aprilia","Suzuki","Harley-Davidson"];
 let PLATE_REGIONS = ["VD","GE","FR","NE","BE","VS","ZH","BS"];
 
-function selector(points, scenario, callback) {
+function selector(points, scenario_type, scenario_name, callback) {
     let viewport = gen.crt_viewport;
     let jsonPoints = JSON.parse(points);
     let nbP = numberPoints(jsonPoints);
@@ -15,7 +14,7 @@ function selector(points, scenario, callback) {
     let chosenPoints = [];
     let nbPtc;  // Number of Points to choose
     let random;
-    switch(scenario) {
+    switch(scenario_type) {
         case "car usual transit" :
             nbPtc = Math.floor((Math.random()*(9/5000)*nbP)+(1/5000)*nbP);
             cp = choosePoints(jsonPoints, nbPtc);
@@ -40,7 +39,6 @@ function selector(points, scenario, callback) {
             let pob = pointsOnBorder(jsonPoints, viewport);
             let npob = pob.length/2;
             nbPtc = (npob < 10)?npob:10;
-            nbPtc = 1;
             for (let i = 0; i < nbPtc; i++) {
                 do {
                     random = Math.floor(Math.random()*npob)*2;
@@ -49,7 +47,7 @@ function selector(points, scenario, callback) {
                 chosenPoints.push(pob[random]);
                 pob[random] = NaN;
             }
-            chosenPoints = buildJSON(chosenPoints, true);
+            chosenPoints = buildJSON(chosenPoints, scenario_name, true);
     }
     callback(chosenPoints);
 }
@@ -73,38 +71,13 @@ function choosePoints(jsonPoints, nbPtc) {
     return cp;
 }
 
-function buildJSON(chosenPoints, onlyCars) {
-    //let vehicles = '{"allSnappedPoints":[{"snappedPoints":[';
+function buildJSON(chosenPoints, scenario_name, onlyCars) {
     let vehicles = '{"contextElements":[';
     let date = new Date().toISOString();
     for (let i = 0; i < chosenPoints.length; i++) {
         if (i !== 0) {
             vehicles = vehicles.concat(',');
         }
-        /*
-        vehicles = vehicles.concat('{"timestamp":"');
-        vehicles = vehicles.concat(Date.now().toString());
-        vehicles = vehicles.concat('",');
-        vehicles = vehicles.concat('"vehiclePlateIdentifier":"');
-        vehicles = vehicles.concat(randomPlate());
-        vehicles = vehicles.concat('",');
-        vehicles = vehicles.concat('"vehicleType":');
-        let isCar = Math.random();
-        vehicles = vehicles.concat((onlyCars || isCar >= 0.5)?'"Car",':'"Motorcycle",');
-        vehicles = vehicles.concat('"brandName":"');
-        vehicles = vehicles.concat((onlyCars || isCar >= 0.5)?randomBrandName(true):randomBrandName(false));
-        vehicles = vehicles.concat('",');
-        vehicles = vehicles.concat('"color":"');
-        vehicles = vehicles.concat(randomColor());
-        vehicles = vehicles.concat('",');
-        vehicles = vehicles.concat('"location":{');
-        vehicles = vehicles.concat('"latitude":');
-        vehicles = vehicles.concat(chosenPoints[i++]);
-        vehicles = vehicles.concat(',');
-        vehicles = vehicles.concat('"longitude":');
-        vehicles = vehicles.concat(chosenPoints[i]);
-        vehicles = vehicles.concat('}}');
-        */
         vehicles = vehicles.concat('{"type":"Vehicle","isPattern":"false","id":"');
         vehicles = vehicles.concat(randomId());
         vehicles = vehicles.concat('","attributes":[');
@@ -127,15 +100,17 @@ function buildJSON(chosenPoints, onlyCars) {
         vehicles = vehicles.concat('"},');
         vehicles = vehicles.concat('{"name":"timestamp","type":"Date","value":"');
         vehicles = vehicles.concat(date);
+        vehicles = vehicles.concat('"},');
+        vehicles = vehicles.concat('{"name":"scenario","type":"string","value":"');
+        vehicles = vehicles.concat(scenario_name);
         vehicles = vehicles.concat('"}]}');
     }
-    //vehicles = vehicles.concat(']}]}');
     vehicles = vehicles.concat('],"updateAction": "APPEND"}');
     return vehicles;
 }
 
 function randomId() {
-    return "Car" + Math.floor(Math.random()*1000000);
+    return "Vehicle" + Math.floor(Math.random()*1000000);
 }
 
 function randomPlate() {
@@ -178,7 +153,7 @@ function numberPoints(points) {
 // Returns an array containing all points on and around the border of the viewport
 function pointsOnBorder(points, viewport) {
     let pob = [];
-    let margin = 0.0005;
+    let margin = (viewport[0]-viewport[2])/50;
     for (let i = 0; i < points.allSnappedPoints.length; i++) {
         for (let j = 0; j < points.allSnappedPoints[i].snappedPoints.length; j++) {
             let point = points.allSnappedPoints[i].snappedPoints[j];

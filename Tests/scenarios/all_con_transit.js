@@ -1,9 +1,6 @@
 module.exports.all_con_transit = all_con_transit;
 
-let gen = require('../../generator.js');
-
 function all_con_transit(inputVehicles, outputVehicles, viewport_key, storage) {
-    let viewport = gen.getViewPortFromKey(viewport_key);
     let viewportNum = storage.getItemSync(viewport_key);
     let scenarioPassed = false;
     let vehicleNumber = true;

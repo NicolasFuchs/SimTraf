@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWet" name="simtraf" version="2.9">
+<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWet" name="simtraf" version="7.4">
     <details>
         <title>SimTraf Controls</title>
         <!--<homepage></homepage>-->
@@ -14,8 +14,12 @@
         <!--<doc></doc>-->
     </details>
     <wiring>
+        <inputendpoint name="sliderInput" type="text" label="slider value entered" description="Slider has been moved" friendcode="sliderInput"/>
         <inputendpoint name="viewportInput" type="text" label="viewport selected" description="The viewport in which the simulation is created" friendcode="viewportInput"/>
         <outputendpoint name="locationOutput" type="text" label="location selected" description="A location has been chosen to be displayed on map" friendcode="locationOutput"/>
+        <outputendpoint name="entityOutput" type="text" label="entity to display" description="An entity has been chosen to be displayed on map" friendcode="entityOutput"/>
+        <outputendpoint name="deleteOutput" type="text" label="entity to delete" description="An entity has been chosen to be deleted from map" friendcode="deleteOutput"/>
+        <outputendpoint name="sliderOutput" type="text" label="slider value running" description="Simulation moves slider automatically" friendcode="sliderOutput"/>
     </wiring>
     <contents src="index.html" useplatformstyle="true"/>
     <rendering width="5" height="18"/>

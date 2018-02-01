@@ -1,9 +1,6 @@
 module.exports.all_usu_parking = all_usu_parking;
 
-let gen = require('../../generator.js');
-
 function all_usu_parking(inputVehicles, outputVehicles, viewport_key, storage) {
-    let viewport = gen.getViewPortFromKey(viewport_key);
     let viewportNum = storage.getItemSync(viewport_key);
     let scenarioPassed = false;
     let vehicleNumber = true;

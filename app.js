@@ -21,57 +21,20 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/loca', function (req, res) {
-    gen.generator('loca', parseFloat(req.query.NE_lat), parseFloat(req.query.NE_lng), parseFloat(req.query.SW_lat), parseFloat(req.query.SW_lng), function(msg) {
-        sel.selector(msg, req.query.scena, function(vehicles) {
-            pat.pathFinder(vehicles, msg, req.query.scena, function(vehiclesAndPathes) {
-                res.header("Access-Control-Allow-Origin", "*");
-                res.header("Access-Control-Allow-Headers", "X-Requested-With");
-                console.log(vehiclesAndPathes);
-                res.send(vehiclesAndPathes);
-            });
-        });
-    });
-});
-app.get('/zoom', function (req, res) {
-    gen.generator('zoom', parseFloat(req.query.NE_lat), parseFloat(req.query.NE_lng), parseFloat(req.query.SW_lat), parseFloat(req.query.SW_lng), function(msg) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "X-Requested-With");
-        res.send(msg);
-    });
-});
-app.get('/drag', function (req, res) {
-    gen.generator('drag', parseFloat(req.query.NE_lat), parseFloat(req.query.NE_lng), parseFloat(req.query.SW_lat), parseFloat(req.query.SW_lng), function(msg) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "X-Requested-With");
-        res.send(msg);
-    });
-});
 let creator = require('./creator.js');
 let stockor = require('./stockor.js');
 app.get('/creation', function(req, res) {
-    console.log("NE_lat : " + req.query.NE_lat);
-    console.log("NE_lng : " + req.query.NE_lng);
-    console.log("SW_lat : " + req.query.SW_lat);
-    console.log("SW_lng : " + req.query.SW_lng);
-    gen.generator('drag', parseFloat(req.query.NE_lat), parseFloat(req.query.NE_lng), parseFloat(req.query.SW_lat), parseFloat(req.query.SW_lng), function(msg) {
-        console.log("generator response : " + msg);
-        console.log("generator done");
-        sel.selector(msg, req.query.type, function(vehicles) {
-            console.log("selector response : " + vehicles);
-            console.log("selector done");
+    gen.generator(parseFloat(req.query.NE_lat), parseFloat(req.query.NE_lng), parseFloat(req.query.SW_lat), parseFloat(req.query.SW_lng), function(msg) {
+        sel.selector(msg, req.query.type, req.query.name, function(vehicles) {
             pat.pathFinder(vehicles, msg, req.query.type, function(vehiclesAndPathes) {
-                console.log("pathFinder response : " + vehiclesAndPathes);
-                console.log("pathFinder done");
                 stockor.stockor(vehiclesAndPathes, function(statuscode) {
-                    console.log("stockor response : " + statuscode)
-                    console.log("stockor done");
                     if (statuscode/100 === 2) {
                         creator.creator(req.query.name, req.query.location, req.query.type, function() {
-                            console.log("creator done");
-                            res.header("Access-Control-Allow-Origin", "*");
-                            res.header("Access-Control-Allow-Headers", "X-Requested-With");
-                            res.send("Illll essst! dixxx heureeeessss! Vinnnnn Piennnnn!");
+                            creator.choice(function(grid) {
+                                res.header("Access-Control-Allow-Origin", "*");
+                                res.header("Access-Control-Allow-Headers", "X-Requested-With");
+                                res.send(grid);
+                            });
                         });
                     }
                 });
@@ -79,16 +42,22 @@ app.get('/creation', function(req, res) {
         });
     });
 });
-app.get('/choice', function(req, res) {
-    creator.choice(function(choices){
+
+app.get('/grid', function(req, res) {
+    creator.choice(function(grid) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "X-Requested-With");
-        res.send(choices);
+        res.send(grid);
     });
 });
-app.get('/tunnel', function(req, res) {
-    console.log("Tunnel working!");
-    res.send('Los Angeles');
+
+let gettor = require('./gettor.js');
+app.get('/choice', function(req, res) {
+    gettor.gettor(req.query.name, function(entities) {
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Headers", "X-Requested-With");
+        res.send(entities);
+    });
 });
 
 // catch 404 and forward to error handler

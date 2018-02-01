@@ -14,11 +14,11 @@ storage.initSync({
 function creator(scenario_name, scenario_location, scenario_type, callback) {
     storage.getItem('scenarios', function(err, res) {
         if (res !== undefined) {
-            let scenas = JSON.parse(res);
+            let scenas = res;
             scenas.scenarios.push({"name": scenario_name,"scenario": scenario_type,"location": scenario_location});
-            storage.setItemSync('scenarios', JSON.stringify(scenas));
+            storage.setItemSync('scenarios', scenas);
         } else {
-            storage.setItemSync('scenarios', '{"scenarios":[{"name":"' + scenario_name + '","scenario":"' + scenario_type + '","location":"' + scenario_location + '"}]}');
+            storage.setItemSync('scenarios', {"scenarios":[{"name": scenario_name,"scenario": scenario_type,"location": scenario_location}]});
         }
         callback();
     });
@@ -27,6 +27,6 @@ function creator(scenario_name, scenario_location, scenario_type, callback) {
 function choice(callback) {
     storage.getItem('scenarios', function(err, res) {
         if (res === undefined) res = "";
-        callback(res);
+        callback(JSON.stringify(res));
     });
 }

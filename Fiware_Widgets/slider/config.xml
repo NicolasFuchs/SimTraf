@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWet" name="simtraf" version="0.6">
+<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWet" name="simtraf_slider" version="2.2">
     <details>
-        <title>SimTraf Controls</title>
+        <title>SimTraf slider</title>
         <!--<homepage></homepage>-->
         <authors>Nicolas Fuchs</authors>
         <contributors>HumanTech HEIA-FR</contributors>
         <email>nicolas.fuchs@edu.hefr.ch</email>
         <image>images/simtraf.png</image>
-        <description>Basic controls to display vehicles on a map</description>
+        <description>Basic slider to display vehicles on a map</description>
         <!--<longdescription></longdescription>-->
         <license>No License</license>
         <!--<licenseurl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseurl>-->
         <!--<doc></doc>-->
     </details>
     <wiring>
-        <outputendpoint name="locationOutput" type="text" label="location selected" description="A location has been chosen to be displayed on map" friendcode="locationOutput"/>
+        <inputendpoint name="timestampInput" type="text" label="timestamp Input" description="Slider is moved automatically" friendcode="timestampInput"/>
+        <outputendpoint name="timestampOutput" type="text" label="timestamp Output" description="Slider is moved by user" friendcode="timestampOutput"/>
     </wiring>
     <contents src="index.html" useplatformstyle="true"/>
-    <rendering width="5" height="18"/>
+    <rendering width="5" height="5"/>
 </widget>

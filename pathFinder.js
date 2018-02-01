@@ -4,9 +4,6 @@ let gen = require('./generator.js');
 let request = require('request');
 
 function pathFinder(v, points, scenario, callback) {
-    console.log("v : " + v);
-    console.log("points : " + points);
-    console.log("scenario : " + scenario);
     let pathes = [];
     switch(scenario) {
         case "car usual transit" :
@@ -18,20 +15,12 @@ function pathFinder(v, points, scenario, callback) {
         case "all usual parking" :
             break;
         case "car minimal timing" :
-
             let meetingPoint = findACenteredPoint(points);
             let destination = (meetingPoint[0].toString()).concat(',');
             destination += meetingPoint[1];
             callDirectionsAPI(v, 0, 0);
-            function callDirectionsAPI(v, i, j) {
+            function callDirectionsAPI(v, i) {
                 let vehicles = JSON.parse(v);
-                /*if (i === vehicles.allSnappedPoints.length) {
-                    callback([v, buildFullPathes(pathes)]); return;
-                } else if (j === vehicles.allSnappedPoints[i].snappedPoints.length) {
-                    callDirectionsAPI(v, i+1, 0); return;
-                }
-                let point = vehicles.allSnappedPoints[i].snappedPoints[j];
-                let origin = point.location.latitude + "," + point.location.longitude;*/
                 if (i === vehicles.contextElements.length) {
                     callback([v, buildFullPathes(pathes)]); return;
                 }
@@ -46,7 +35,6 @@ function pathFinder(v, points, scenario, callback) {
                 };
                 request.get(options, function (error, response, body) {
                     pathes.push(body);
-                    //callDirectionsAPI(v, i, j+1);
                     callDirectionsAPI(v, i+1);
                 });
             }

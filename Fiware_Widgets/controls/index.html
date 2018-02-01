@@ -4,15 +4,15 @@
     <meta http-equiv="Content-Type" content="application/xhtml+xml" charset="UTF-8">
     <script src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
-    <!--<link rel="stylesheet" type="text/css" href="../public/stylesheets/style.css"/>-->
     <title>SimTraf Controls</title>
     <style>
         div { text-align: center; }
         button { width: 400px; height: 50px; display: block; margin: auto; }
-        table, th, tr { border: 1px solid black; border-collapse: collapse; }
+        table, th, tr { border: 1px solid black; border-collapse: collapse; width: 100%; padding-bottom: 10px;}
         img { width: 100px; height: 100px; }
         #Creation_Choice { margin-top: 50px; }
         #Creation, #Choice, #Run { display: none; }
+        #createdList td:hover { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -54,16 +54,6 @@
                         <th>Scenario type</th>
                         <th>Location</th>
                     </tr>
-                    <!--<tr>
-                        <td>First scenario</td>
-                        <td>car usual traffic</td>
-                        <td>Fribourg</td>
-                    </tr>
-                    <tr>
-                        <td>Bouchons</td>
-                        <td>all congested traffic</td>
-                        <td>Lausanne</td>
-                    </tr>-->
                 </tbody>
             </table>
         </div>
@@ -74,6 +64,17 @@
 
     <!-- Simulation run -->
     <div id="Run">
+        <div>
+            <table id="runningScenario">
+                <tbody>
+                    <tr>
+                        <th>Scenario name</th>
+                        <th>Scenario type</th>
+                        <th>Location</th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div>
             <img src="images/backward.png" alt="backward arrow">
             <img src="images/paused.png" alt="play/pause" id="play">

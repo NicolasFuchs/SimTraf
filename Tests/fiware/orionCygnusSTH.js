@@ -509,7 +509,7 @@ vehicleID = 'Car2';
 IPaddress = '160.98.10.15';
 subscriptionId = '5a3b94efa9019d35cbd89acb';
 
-o_deletion();
+//o_deletion();
 //o_creation();
 //o_update();
 //o_retrieval();

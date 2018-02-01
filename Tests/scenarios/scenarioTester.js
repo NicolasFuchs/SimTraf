@@ -1,14 +1,5 @@
 module.exports.isOnBorder = isOnBorder;
 
-// inputPoints and outputPoints have to be sorted in the same order to enable the comparison
-// scenario : string describing which scenario is tested
-// inputVehicles : array of json vehicles representing each vehicle generated for the tested scenario before the simulation
-// outputVehicles : array of json vehicles representing each vehicle obtained for the tested scenario after the simulation
-// viewport : array of two points (hashvalue) describing the view of the map in which the simulation has been run
-function scenarioTester() {
-
-}
-
 // Returns if point is on viewport (border)
 function isOnBorder(point, viewport) {
     let isOnBorder = false;
