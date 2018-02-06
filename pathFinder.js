@@ -4,6 +4,7 @@ let gen = require('./generator.js');
 let request = require('request');
 
 function pathFinder(v, points, scenario, callback) {
+
     let pathes = [];
     switch(scenario) {
         case "car usual transit" :
@@ -18,7 +19,7 @@ function pathFinder(v, points, scenario, callback) {
             let meetingPoint = findACenteredPoint(points);
             let destination = (meetingPoint[0].toString()).concat(',');
             destination += meetingPoint[1];
-            callDirectionsAPI(v, 0, 0);
+            callDirectionsAPI(v, 0);
             function callDirectionsAPI(v, i) {
                 let vehicles = JSON.parse(v);
                 if (i === vehicles.contextElements.length) {

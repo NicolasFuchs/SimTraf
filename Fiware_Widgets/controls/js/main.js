@@ -61,8 +61,13 @@ $(document).ready(function() {
             onSuccess: function (res) {
                 entities = res.response;
                 if (res !== "") {
-                    for (let i = 0; i < res.response.length; i++) {
-                        MashupPlatform.wiring.pushEvent('entityOutput', JSON.stringify(res.response[i][0]));
+                    alert("entities.length = " + entities.length);
+                    console.log("entities[0] = " + JSON.stringify(entities[0]));
+                    console.log("entities[1] = " + JSON.stringify(entities[1]));
+                    alert("first vehicle time 0 = " + JSON.stringify(entities[0][0]));
+                    alert("Second vehicle time 0 = " + JSON.stringify(entities[1][0]));
+                    for (let i = 0; i < entities.length; i++) {
+                        MashupPlatform.wiring.pushEvent('entityOutput', JSON.stringify(entities[i][0]));
                     }
                     runSimulation(entities, 1);
                 }
@@ -102,7 +107,7 @@ function runSimulation(entities, index) {
             entityToDelete.push(entities[i][index]);
         }
         if (!stopSimulation) {
-            setTimeout(function() { runSimulation(entities, index+1); }, 2000);
+            setTimeout(function() { runSimulation(entities, index+1); }, 500);
         } else {
             for (let j = 0; j < entityToDelete.length; j++) {
                 MashupPlatform.wiring.pushEvent('deleteOutput', JSON.stringify(entityToDelete[j]));
@@ -128,7 +133,9 @@ function displayGrid(grid) {
             if (selectedScena !== undefined) {
                 scenarioToRun = selectedScena;
                 $("#createdList tr").css('background', 'white');
+                $("#createdList tr").css('color', 'black'); //NEW
                 $(this).css('background', 'green');
+                $(this).css('color', 'white');              //NEW
             }
         });
     }

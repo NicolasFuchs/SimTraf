@@ -283,5 +283,6 @@ function generator (NE_lat, NE_lng, SW_lat, SW_lng, callback) {
     module.exports.crt_viewport = crt_viewport;
     module.exports.crt_hashkey = crt_hashkey;
 
-    drag(storage, callback);
+    //drag(storage, callback);
+    callback();
 }

@@ -39,6 +39,7 @@ function selector(points, scenario_type, scenario_name, callback) {
             let pob = pointsOnBorder(jsonPoints, viewport);
             let npob = pob.length/2;
             nbPtc = (npob < 10)?npob:10;
+            nbPtc = 2;
             for (let i = 0; i < nbPtc; i++) {
                 do {
                     random = Math.floor(Math.random()*npob)*2;
